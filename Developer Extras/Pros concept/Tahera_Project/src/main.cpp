@@ -1,117 +1,130 @@
 #include "main.h"
-#include "lemlib/api.hpp"
+#include "hot-cold-asset/asset.hpp"
+#include "lemlib/motions/follow.hpp"
+#include "units/Angle.hpp"
+
+#include <cmath> 
+
+ASSET(auton_path_txt);
+
+namespace {
+constexpr double kStartX_m = 1.60675; // 160.675 cm
+constexpr double kStartY_m = 0.65846; // 65.846 cm
+constexpr double kStartHeadingDeg = 25.4375; // first-segment heading in compass degrees
+}
 
 // ======================================================
-// Motors
+// 1. MOTORS & SENSORS (PROS 4 Syntax)
 // ======================================================
+pros::MotorGroup left_motors({-1, 2, -3}, pros::v5::MotorGears::blue);
+pros::MotorGroup right_motors({4, -5, 6}, pros::v5::MotorGears::blue);
 
-// Drivetrain motors
-pros::MotorGroup left_motors({pros::Motor(1, pros::E_MOTOR_GEAR_BLUE, false),
-                              pros::Motor(2, pros::E_MOTOR_GEAR_BLUE, true),
-                              pros::Motor(3, pros::E_MOTOR_GEAR_BLUE, false)});
-pros::MotorGroup right_motors({pros::Motor(4, pros::E_MOTOR_GEAR_BLUE, true),
-                               pros::Motor(5, pros::E_MOTOR_GEAR_BLUE, false),
-                               pros::Motor(6, pros::E_MOTOR_GEAR_BLUE, true)});
+pros::Motor intake_left(7, pros::v5::MotorGears::blue);
+pros::Motor intake_right(-8, pros::v5::MotorGears::blue);
+pros::Motor outtake_left(9, pros::v5::MotorGears::blue);
+pros::Motor outtake_right(-12, pros::v5::MotorGears::blue);
 
-// Intake motors
-pros::Motor intake_left(7, pros::E_MOTOR_GEAR_BLUE, false);
-pros::Motor intake_right(8, pros::E_MOTOR_GEAR_BLUE, true);
-
-// Outtake motor
-pros::Motor outtake(9, pros::E_MOTOR_GEAR_BLUE, false);
-
-// ======================================================
-// Controller
-// ======================================================
 pros::Controller master(pros::E_CONTROLLER_MASTER);
+pros::Imu imu(11);
+pros::Gps gps(10);
 
 // ======================================================
-// GPS Sensor
+// 2. HELPER FUNCTIONS
 // ======================================================
-pros::Gps gps(10, 0, 0); // Removed status flag
 
-// ======================================================
-// LemLib Setup
-// ======================================================
-lemlib::Drivetrain drivetrain(&left_motors, &right_motors, 12.75, 3.25, 450);
-lemlib::OdomSensors sensors(nullptr, nullptr, nullptr, nullptr, &gps);
+void turn_to_heading(double target, int max_speed) {
+    while (true) {
+        double current = imu.get_heading();
+        double error = target - current;
 
-lemlib::ControllerSettings linearController(10, 0, 30, 0, 1, 500, 3);
-lemlib::ControllerSettings angularController(8, 0, 40, 0, 1, 500, 3);
+        if (error > 180) error -= 360;
+        if (error < -180) error += 360;
 
-lemlib::Chassis chassis(&drivetrain, linearController, angularController, sensors);
+        if (std::abs(error) < 2.0) break;
 
-// ======================================================
-// Utility Functions
-// ======================================================
-void intake_on() {
-    intake_left.move(127);
-    intake_right.move(127);
-}
+        double kp = 1.5; 
+        int speed = error * kp;
 
-void intake_reverse() {
-    intake_left.move(-127);
-    intake_right.move(-127);
-}
+        if (speed > max_speed) speed = max_speed;
+        if (speed < -max_speed) speed = -max_speed;
 
-void intake_off() {
-    intake_left.brake();
-    intake_right.brake();
-}
-
-void outtake_on() {
-    outtake.move(127);
-}
-
-void outtake_off() {
-    outtake.brake();
+        left_motors.move(speed);
+        right_motors.move(-speed);
+        pros::delay(20);
+    }
+    left_motors.brake();
+    right_motors.brake();
 }
 
 // ======================================================
-// Initialization
+// 3. COMPETITION PHASES
 // ======================================================
+
 void initialize() {
     pros::lcd::initialize();
-    pros::lcd::set_text(1, "LemLib Initialized");
-
-    chassis.calibrate(); // GPS calibration
+    imu.reset(true); 
 }
 
-// ======================================================
-// Autonomous
-// ======================================================
 void autonomous() {
-    chassis.setPose(0, 0, 0);
-    chassis.moveToPoint(24, 0, 2000);
-    intake_on();
-    pros::delay(1500);
-    intake_off();
-    chassis.moveToPoint(36, 18, 2500);
-    chassis.turnToHeading(90, 1000);
-    outtake_on();
-    pros::delay(1200);
-    outtake_off();
-    chassis.moveToPoint(0, 0, 3000);
-    chassis.turnToHeading(0, 1000);
+    gps.set_position(kStartX_m, kStartY_m, kStartHeadingDeg);
+
+    lemlib::follow(
+        auton_path_txt,
+        10_in,
+        12_sec,
+        {},
+        {.poseGetter =
+             [] -> units::Pose {
+                 const auto position = gps.get_position();
+                 return units::Pose(from_m(position.x), from_m(position.y), from_cDeg(gps.get_heading()));
+             }});
+
+    // TODO: add outtake action here once installed.
 }
 
-// ======================================================
-// Operator Control
-// ======================================================
 void opcontrol() {
     while (true) {
-        int forward = master.get_analog(ANALOG_LEFT_Y);
-        int turn = master.get_analog(ANALOG_RIGHT_X);
+        // --- TANK DRIVE LOGIC ---
+        // Left stick controls left side, Right stick controls right side
+        int left_y = master.get_analog(ANALOG_LEFT_Y);
+        int right_y = master.get_analog(ANALOG_RIGHT_Y);
 
-        left_motors.move(forward - turn);
-        right_motors.move(forward + turn);
+        left_motors.move(left_y);
+        right_motors.move(right_y);
 
+        // --- INTAKE CONTROL (L1/L2) ---
         if (master.get_digital(DIGITAL_L1)) {
-            intake_on();
+            intake_left.move(127);
+            intake_right.move(127);
         } else if (master.get_digital(DIGITAL_L2)) {
-            intake_reverse();
+            intake_left.move(-127);
+            intake_right.move(-127);
         } else {
-            intake_off();
+            intake_left.brake();
+            intake_right.brake();
+        }
+
+        // --- OUTTAKE CONTROL (R1/R2) ---
+        if (master.get_digital(DIGITAL_R1)) {
+            outtake_left.move(127);
+            outtake_right.move(127);
+        } else if (master.get_digital(DIGITAL_R2)) {
+            outtake_left.move(-127);
+            outtake_right.move(-127);
+        } else {
+            outtake_left.brake();
+            outtake_right.brake();
+        }
+
+        // --- GPS READOUT (BRAIN SCREEN) ---
+        static uint32_t last_screen_ms = 0;
+        const uint32_t now = pros::millis();
+        if (now - last_screen_ms >= 200) {
+            const auto position = gps.get_position();
+            pros::screen::print(pros::TEXT_MEDIUM, 1, "GPS X: %.2f m", position.x);
+            pros::screen::print(pros::TEXT_MEDIUM, 2, "GPS Y: %.2f m", position.y);
+            pros::screen::print(pros::TEXT_MEDIUM, 3, "GPS H: %.2f deg", gps.get_heading() / 100.0);
+            last_screen_ms = now;
         }
 
         pros::delay(20);
