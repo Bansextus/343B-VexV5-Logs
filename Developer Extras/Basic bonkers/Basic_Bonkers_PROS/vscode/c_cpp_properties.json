@@ -1,0 +1,26 @@
+{
+    "configurations": [
+        {
+            "name": "PROS",
+            "includePath": [
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/include/lemlib",
+                "~/.pros/include"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "macos-clang-x64",
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/include",
+                    "${workspaceFolder}/include/lemlib",
+                    "~/.pros/include"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            }
+        }
+    ],
+    "version": 4
+}

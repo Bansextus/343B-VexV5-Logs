@@ -3,6 +3,7 @@
 #include "lemlib/config.hpp"
 #include "lemlib/util.hpp"
 #include <functional>
+#include <variant>
 
 namespace lemlib {
 
