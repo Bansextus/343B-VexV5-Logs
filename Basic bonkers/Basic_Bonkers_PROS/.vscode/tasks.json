@@ -1,0 +1,42 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "PROS: Build",
+      "type": "shell",
+      "command": "pros make",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PATH": "/Users/lorenzodiiorio/Library/Application Support/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-macos/bin:${env:PATH}"
+        }
+      },
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "PROS: Upload",
+      "type": "shell",
+      "command": "pros upload",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PATH": "/Users/lorenzodiiorio/Library/Application Support/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-macos/bin:${env:PATH}"
+        }
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "PROS: Make + Upload",
+      "type": "shell",
+      "command": "pros mu",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PATH": "/Users/lorenzodiiorio/Library/Application Support/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-macos/bin:${env:PATH}"
+        }
+      },
+      "problemMatcher": []
+    }
+  ]
+}

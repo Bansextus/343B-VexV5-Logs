@@ -1,0 +1,62 @@
+{
+  "configurations": [
+    {
+      "name": "PROS Project",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "/Users/lorenzodiiorio/Documents/GitHub/2026-Vex-V5-Pushback-Code-and-Desighn-/Developer Extras/Pros concept/Tahera project/include"
+      ],
+      "defines": [
+        "_DEBUG",
+        "UNICODE",
+        "_UNICODE"
+      ],
+      "compilerPath": "/Users/lorenzodiiorio/Library/Application Support/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-macos/bin/arm-none-eabi-g++",
+      "cStandard": "gnu11",
+      "cppStandard": "gnu++20",
+      "intelliSenseMode": "gcc-arm",
+      "macFrameworkPath": [
+        "/System/Library/Frameworks"
+      ],
+      "browse": {
+        "path": [
+          "/Users/lorenzodiiorio/Documents/GitHub/2026-Vex-V5-Pushback-Code-and-Desighn-/Developer Extras/Pros concept/Tahera project"
+        ],
+        "limitSymbolsToIncludedHeaders": true,
+        "databaseFilename": ""
+      }
+    }
+  ],
+  "version": 4
+}
+{
+    "configurations": [
+        {
+            "name": "PROS",
+            "includePath": [
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/include/lemlib",
+                "~/.pros/include"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "macos-clang-x64",
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/include",
+                    "${workspaceFolder}/include/lemlib",
+                    "~/.pros/include"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            }
+        }
+    ],
+    "version": 4
+}
+
+
+pros build
+
+

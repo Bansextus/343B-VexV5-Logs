@@ -1,0 +1,6 @@
+{
+  "terminal.integrated.env.osx": {
+    "PATH": "/Users/lorenzodiiorio/Library/Application Support/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-macos/bin:${env:PATH}"
+  },
+  "C_Cpp.errorSquiggles": "disabled"
+}
