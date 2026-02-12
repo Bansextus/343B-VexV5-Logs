@@ -107,6 +107,12 @@ static bool g_auton_running = false;
 static bool g_gps_drive_enabled = false;
 static bool g_six_wheel_drive_enabled = true;
 pros::Mutex g_auton_mutex;
+constexpr int kSlotCount = 3;
+constexpr char kSlot1File[] = "auton_plans_slot1.txt";
+constexpr char kSlot2File[] = "auton_plans_slot2.txt";
+constexpr char kSlot3File[] = "auton_plans_slot3.txt";
+constexpr char kSlotIndexFile[] = "auton_slot.txt";
+static int g_active_slot = 0;
 constexpr char kUiConfigName[] = "ui_images.txt";
 constexpr char kDefaultSplash[] = "loading_icon.bmp";
 constexpr char kDefaultRun[] = "jerkbot.bmp";
@@ -445,6 +451,7 @@ void draw_brain_ui() {
     pros::screen::print(TEXT_MEDIUM, 10, 95, "SOURCE: %s",
                         g_sd_plans_loaded ? "SD" : "BUILT-IN");
     pros::screen::print(TEXT_MEDIUM, 10, 120, "SD: %s", g_sd_plans_loaded ? "OK" : "MISSING");
+    pros::screen::print(TEXT_MEDIUM, 10, 145, "SLOT: %d", g_active_slot + 1);
     pros::screen::print(TEXT_MEDIUM, 10, 210, "Tap RUN to start auton");
 }
 
@@ -670,14 +677,39 @@ StepType parse_step_type(const std::string& token) {
     return StepType::EMPTY;
 }
 
-void load_sd_plans() {
+const char* slot_filename(int slot) {
+    switch (slot) {
+        case 0: return kSlot1File;
+        case 1: return kSlot2File;
+        case 2: return kSlot3File;
+        default: return kSlot1File;
+    }
+}
+
+int read_slot_from_sd() {
+    FILE* file = sd_open(kSlotIndexFile, "r");
+    if (!file) {
+        return 0;
+    }
+    int slot = 1;
+    if (std::fscanf(file, "%d", &slot) != 1) {
+        std::fclose(file);
+        return 0;
+    }
+    std::fclose(file);
+    if (slot < 1 || slot > kSlotCount) {
+        return 0;
+    }
+    return slot - 1;
+}
+
+bool load_sd_plans_from(const char* filename) {
     gps_plan_sd.clear();
     basic_plan_sd.clear();
 
-    FILE* file = sd_open("auton_plans.txt", "r");
+    FILE* file = sd_open(filename, "r");
     if (!file) {
-        g_sd_plans_loaded = false;
-        return;
+        return false;
     }
 
     enum class Section { NONE, GPS, BASIC };
@@ -711,7 +743,21 @@ void load_sd_plans() {
     }
 
     std::fclose(file);
-    g_sd_plans_loaded = !(gps_plan_sd.empty() && basic_plan_sd.empty());
+    return !(gps_plan_sd.empty() && basic_plan_sd.empty());
+}
+
+void load_sd_plans() {
+    g_active_slot = read_slot_from_sd();
+    const char* slot_file = slot_filename(g_active_slot);
+    if (load_sd_plans_from(slot_file)) {
+        g_sd_plans_loaded = true;
+        return;
+    }
+    if (load_sd_plans_from("auton_plans.txt")) {
+        g_sd_plans_loaded = true;
+        return;
+    }
+    g_sd_plans_loaded = false;
 }
 
 // ======================================================

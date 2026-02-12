@@ -1,7 +1,7 @@
 {
     "py/object": "pros.conductor.project.Project",
     "py/state": {
-        "project_name": "Tahera project",
+        "project_name": "The Tahera Sequence",
         "target": "v5",
         "templates": {
             "kernel": {

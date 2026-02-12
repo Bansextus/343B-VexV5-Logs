@@ -217,6 +217,11 @@ struct Step {
 };
 
 constexpr std::size_t kMaxSteps = 10;
+constexpr int kSlotCount = 3;
+constexpr char kSlot1File[] = "auton_plans_slot1.txt";
+constexpr char kSlot2File[] = "auton_plans_slot2.txt";
+constexpr char kSlot3File[] = "auton_plans_slot3.txt";
+static int g_save_slot = 0;
 
 // --- GPS MODE PLAN (EDIT THIS) ---
 static Step gps_plan[kMaxSteps] = {
@@ -340,6 +345,54 @@ StepType next_step_type(StepType type) {
     }
 }
 
+StepType parse_step_type(const std::string& token) {
+    if (token == "EMPTY") return StepType::EMPTY;
+    if (token == "DRIVE_MS") return StepType::DRIVE_MS;
+    if (token == "TANK_MS") return StepType::TANK_MS;
+    if (token == "TURN_HEADING") return StepType::TURN_HEADING;
+    if (token == "WAIT_MS") return StepType::WAIT_MS;
+    if (token == "INTAKE_ON") return StepType::INTAKE_ON;
+    if (token == "INTAKE_OFF") return StepType::INTAKE_OFF;
+    if (token == "OUTTAKE_ON") return StepType::OUTTAKE_ON;
+    if (token == "OUTTAKE_OFF") return StepType::OUTTAKE_OFF;
+    return StepType::EMPTY;
+}
+
+const char* slot_filename(int slot) {
+    switch (slot) {
+        case 0: return kSlot1File;
+        case 1: return kSlot2File;
+        case 2: return kSlot3File;
+        default: return kSlot1File;
+    }
+}
+
+int read_slot_file() {
+    FILE* file = sd_open("auton_slot.txt", "r");
+    if (!file) {
+        return 0;
+    }
+    int slot = 1;
+    if (std::fscanf(file, "%d", &slot) != 1) {
+        std::fclose(file);
+        return 0;
+    }
+    std::fclose(file);
+    if (slot < 1 || slot > kSlotCount) {
+        return 0;
+    }
+    return slot - 1;
+}
+
+void write_slot_file(int slot) {
+    FILE* file = sd_open("auton_slot.txt", "w");
+    if (!file) {
+        return;
+    }
+    std::fprintf(file, "%d\n", slot + 1);
+    std::fclose(file);
+}
+
 Step* active_plan(int* count) {
     if (g_auton_mode == AutonMode::GPS_MODE) {
         *count = static_cast<int>(kMaxSteps);
@@ -372,6 +425,57 @@ void clear_plan(Step* plan, int count) {
     for (int i = 0; i < count; ++i) {
         plan[i] = {StepType::EMPTY, 0, 0, 0};
     }
+}
+
+bool load_plans_from_sd(const char* filename) {
+    FILE* file = sd_open(filename, "r");
+    if (!file) {
+        return false;
+    }
+
+    g_plan_mutex.take();
+    clear_plan(gps_plan, static_cast<int>(kMaxSteps));
+    clear_plan(basic_plan, static_cast<int>(kMaxSteps));
+
+    enum class Section { NONE, GPS, BASIC };
+    Section section = Section::NONE;
+    int gps_idx = 0;
+    int basic_idx = 0;
+
+    char line[128];
+    while (std::fgets(line, sizeof(line), file)) {
+        std::string s(line);
+        if (s.find("[GPS]") != std::string::npos) {
+            section = Section::GPS;
+            continue;
+        }
+        if (s.find("[BASIC]") != std::string::npos) {
+            section = Section::BASIC;
+            continue;
+        }
+        if (s.empty() || s[0] == '#') {
+            continue;
+        }
+
+        char type_str[32];
+        int v1 = 0;
+        int v2 = 0;
+        int v3 = 0;
+        const int fields = std::sscanf(s.c_str(), "%31[^,],%d,%d,%d", type_str, &v1, &v2, &v3);
+        if (fields >= 3) {
+            Step step{parse_step_type(type_str), v1, v2, v3};
+            if (section == Section::GPS && gps_idx < static_cast<int>(kMaxSteps)) {
+                gps_plan[gps_idx++] = step;
+            } else if (section == Section::BASIC && basic_idx < static_cast<int>(kMaxSteps)) {
+                basic_plan[basic_idx++] = step;
+            }
+        }
+    }
+
+    std::fclose(file);
+    g_plan_mutex.give();
+    g_record_ui_dirty = true;
+    return true;
 }
 
 void start_recording() {
@@ -449,17 +553,23 @@ void draw_record_button() {
     draw_button(rec_btn, label, color);
 }
 
-void draw_menu(AutonMode mode, int step_index, Step* plan, std::size_t count) {
+void draw_menu(AutonMode mode, int step_index, Step* plan, std::size_t count, int slot) {
     pros::screen::set_pen(0x00000000);
     pros::screen::fill_rect(0, 0, kScreenW - 1, kScreenH - 1);
 
-    const Rect gps_btn{10, 10, 140, 30};
-    const Rect basic_btn{170, 10, 140, 30};
-    const Rect save_btn{340, 10, 130, 30};
+    const Rect gps_btn{10, 10, 90, 30};
+    const Rect basic_btn{110, 10, 90, 30};
+    const Rect save_btn{210, 10, 90, 30};
+    const Rect slot1_btn{310, 10, 50, 30};
+    const Rect slot2_btn{365, 10, 50, 30};
+    const Rect slot3_btn{420, 10, 50, 30};
 
     draw_button(gps_btn, "GPS", mode == AutonMode::GPS_MODE ? 0x0000FF00 : 0x00FFFFFF);
     draw_button(basic_btn, "BASIC", mode == AutonMode::BASIC_MODE ? 0x0000FF00 : 0x00FFFFFF);
     draw_button(save_btn, "SAVE", 0x00FFFF00);
+    draw_button(slot1_btn, "S1", slot == 0 ? 0x0000FF00 : 0x00FFFFFF);
+    draw_button(slot2_btn, "S2", slot == 1 ? 0x0000FF00 : 0x00FFFFFF);
+    draw_button(slot3_btn, "S3", slot == 2 ? 0x0000FF00 : 0x00FFFFFF);
 
     const Rect prev_btn{10, 60, 70, 30};
     const Rect next_btn{90, 60, 70, 30};
@@ -492,12 +602,14 @@ void draw_menu(AutonMode mode, int step_index, Step* plan, std::size_t count) {
     pros::screen::print(TEXT_MEDIUM, 10, 120, "STEP: %d / %d", step_index + 1, static_cast<int>(count));
     pros::screen::print(TEXT_MEDIUM, 10, 140, "TYPE: %s", step_type_name(step.type));
     pros::screen::print(TEXT_MEDIUM, 10, 160, "V1:%d  V2:%d  V3:%d", step.value1, step.value2, step.value3);
+    pros::screen::print(TEXT_MEDIUM, 10, 95, "SLOT: %d", slot + 1);
 }
 
-bool save_plans_to_sd() {
-    FILE* file = sd_open("auton_plans.txt", "w");
+bool save_plans_to_sd(const char* filename) {
+    FILE* file = sd_open(filename, "w");
     if (!file) return false;
 
+    g_plan_mutex.take();
     std::fprintf(file, "[GPS]\\n");
     for (const auto& step : gps_plan) {
         std::fprintf(file, "%s,%d,%d,%d\\n", step_type_name(step.type), step.value1, step.value2, step.value3);
@@ -508,7 +620,9 @@ bool save_plans_to_sd() {
         std::fprintf(file, "%s,%d,%d,%d\\n", step_type_name(step.type), step.value1, step.value2, step.value3);
     }
 
+    g_plan_mutex.give();
     std::fclose(file);
+    write_slot_file(g_save_slot);
     return true;
 }
 
@@ -517,14 +631,14 @@ void menu_loop() {
     int step_index = 0;
     draw_menu(g_auton_mode, step_index,
               g_auton_mode == AutonMode::GPS_MODE ? gps_plan : basic_plan,
-              static_cast<int>(kMaxSteps));
+              static_cast<int>(kMaxSteps), g_save_slot);
 
     bool touch_armed = false;
 
     while (true) {
         if (g_record_ui_dirty) {
             Step* plan = g_auton_mode == AutonMode::GPS_MODE ? gps_plan : basic_plan;
-            draw_menu(g_auton_mode, step_index, plan, kMaxSteps);
+            draw_menu(g_auton_mode, step_index, plan, kMaxSteps, g_save_slot);
             g_record_ui_dirty = false;
         }
 
@@ -538,9 +652,12 @@ void menu_loop() {
             const int x = status.x;
             const int y = status.y;
 
-            const Rect gps_btn{10, 10, 140, 30};
-            const Rect basic_btn{170, 10, 140, 30};
-            const Rect save_btn{340, 10, 130, 30};
+            const Rect gps_btn{10, 10, 90, 30};
+            const Rect basic_btn{110, 10, 90, 30};
+            const Rect save_btn{210, 10, 90, 30};
+            const Rect slot1_btn{310, 10, 50, 30};
+            const Rect slot2_btn{365, 10, 50, 30};
+            const Rect slot3_btn{420, 10, 50, 30};
             const Rect prev_btn{10, 60, 70, 30};
             const Rect next_btn{90, 60, 70, 30};
             const Rect type_btn{170, 60, 140, 30};
@@ -560,7 +677,7 @@ void menu_loop() {
                     start_recording();
                 }
                 Step* plan = g_auton_mode == AutonMode::GPS_MODE ? gps_plan : basic_plan;
-                draw_menu(g_auton_mode, step_index, plan, kMaxSteps);
+                draw_menu(g_auton_mode, step_index, plan, kMaxSteps, g_save_slot);
                 pros::delay(50);
                 continue;
             }
@@ -572,7 +689,7 @@ void menu_loop() {
                 clear_plan(plan, static_cast<int>(kMaxSteps));
                 g_plan_mutex.give();
                 step_index = 0;
-                draw_menu(g_auton_mode, step_index, plan, kMaxSteps);
+                draw_menu(g_auton_mode, step_index, plan, kMaxSteps, g_save_slot);
                 pros::delay(50);
                 continue;
             }
@@ -580,14 +697,48 @@ void menu_loop() {
             if (g_recording) {
                 draw_menu(g_auton_mode, step_index,
                           g_auton_mode == AutonMode::GPS_MODE ? gps_plan : basic_plan,
-                          kMaxSteps);
+                          kMaxSteps, g_save_slot);
                 pros::delay(50);
                 continue;
             }
 
             if (hit_test(gps_btn, x, y)) g_auton_mode = AutonMode::GPS_MODE;
             if (hit_test(basic_btn, x, y)) g_auton_mode = AutonMode::BASIC_MODE;
-            if (hit_test(save_btn, x, y)) save_plans_to_sd();
+            if (hit_test(save_btn, x, y)) save_plans_to_sd(slot_filename(g_save_slot));
+
+            if (hit_test(slot1_btn, x, y)) {
+                g_save_slot = 0;
+                write_slot_file(g_save_slot);
+                if (!load_plans_from_sd(slot_filename(g_save_slot))) {
+                    g_plan_mutex.take();
+                    clear_plan(gps_plan, static_cast<int>(kMaxSteps));
+                    clear_plan(basic_plan, static_cast<int>(kMaxSteps));
+                    g_plan_mutex.give();
+                    g_record_ui_dirty = true;
+                }
+            }
+            if (hit_test(slot2_btn, x, y)) {
+                g_save_slot = 1;
+                write_slot_file(g_save_slot);
+                if (!load_plans_from_sd(slot_filename(g_save_slot))) {
+                    g_plan_mutex.take();
+                    clear_plan(gps_plan, static_cast<int>(kMaxSteps));
+                    clear_plan(basic_plan, static_cast<int>(kMaxSteps));
+                    g_plan_mutex.give();
+                    g_record_ui_dirty = true;
+                }
+            }
+            if (hit_test(slot3_btn, x, y)) {
+                g_save_slot = 2;
+                write_slot_file(g_save_slot);
+                if (!load_plans_from_sd(slot_filename(g_save_slot))) {
+                    g_plan_mutex.take();
+                    clear_plan(gps_plan, static_cast<int>(kMaxSteps));
+                    clear_plan(basic_plan, static_cast<int>(kMaxSteps));
+                    g_plan_mutex.give();
+                    g_record_ui_dirty = true;
+                }
+            }
 
             Step* plan = g_auton_mode == AutonMode::GPS_MODE ? gps_plan : basic_plan;
             const int count = static_cast<int>(kMaxSteps);
@@ -605,7 +756,7 @@ void menu_loop() {
             if (hit_test(v3p_btn, x, y)) plan[step_index].value3 += 50;
             g_plan_mutex.give();
 
-            draw_menu(g_auton_mode, step_index, plan, count);
+            draw_menu(g_auton_mode, step_index, plan, count, g_save_slot);
         }
 
         pros::delay(50);
@@ -626,6 +777,8 @@ void initialize() {
     while (imu.is_calibrating()) {
         pros::delay(10);
     }
+    g_save_slot = read_slot_file();
+    load_plans_from_sd(slot_filename(g_save_slot));
     static pros::Task menu_task(menu_task_fn, nullptr, TASK_PRIORITY_DEFAULT,
                                 TASK_STACK_DEPTH_DEFAULT, "AutonMenu");
 }
