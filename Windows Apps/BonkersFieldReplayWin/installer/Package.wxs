@@ -1,0 +1,24 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package
+    Name="Bonkers Field Replay"
+    Manufacturer="Bonkers"
+    Version="1.0.0"
+    UpgradeCode="4FAC890C-67B9-4378-B23B-0082F05311C6"
+    InstallerVersion="500">
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of Bonkers Field Replay is already installed." />
+    <MediaTemplate />
+
+    <StandardDirectory Id="ProgramFilesFolder">
+      <Directory Id="INSTALLFOLDER" Name="Bonkers Field Replay">
+        <Component Id="AppExe" Guid="*">
+          <File Id="AppExeFile" Source="$(var.SourceDir)\$(var.ExeName)" KeyPath="yes" />
+        </Component>
+      </Directory>
+    </StandardDirectory>
+
+    <Feature Id="MainFeature" Title="Bonkers Field Replay" Level="1">
+      <ComponentRef Id="AppExe" />
+    </Feature>
+  </Package>
+</Wix>
