@@ -24,6 +24,7 @@ namespace Tahera {
         private bool _repoUnlocked = false;
         private bool _suppressReplaySliderEvent = false;
         private int _repoBusyCount = 0;
+        private string? _resolvedGhPath = null;
         private readonly List<ReplayPose> _replayPoses = new();
         private readonly List<PortAssignment> _portAssignments = new() {
             new("L1", "Left Outer 1", 1, Color.FromRgb(64, 220, 198)),
@@ -68,7 +69,8 @@ namespace Tahera {
             IEnumerable<string> args,
             string? workingDirectory = null,
             int timeoutSeconds = 180,
-            bool nonInteractive = false
+            bool nonInteractive = false,
+            Dictionary<string, string>? extraEnv = null
         ) {
             var psi = new ProcessStartInfo(fileName) {
                 RedirectStandardOutput = true,
@@ -90,6 +92,11 @@ namespace Tahera {
                 psi.Environment["GCM_INTERACTIVE"] = "Never";
                 psi.Environment["GH_PROMPT_DISABLED"] = "1";
                 psi.Environment["CI"] = "1";
+            }
+            if (extraEnv != null) {
+                foreach (var pair in extraEnv) {
+                    psi.Environment[pair.Key] = pair.Value;
+                }
             }
 
             var sb = new StringBuilder();
@@ -329,9 +336,35 @@ namespace Tahera {
             var notes = ReleaseNotesTextBox.Text;
             SetReleaseStatus(null, $"Starting release for tag {tag}...");
             AppendReleaseLog($"Starting release flow for tag {tag}.");
+            var ghPath = ResolveGhExecutable();
+            if (string.IsNullOrWhiteSpace(ghPath)) {
+                var fail = "Release failed: GitHub CLI (gh) was not found. Install GitHub CLI and restart Tahera.";
+                AppendReleaseLog(fail);
+                SetReleaseStatus(false, fail);
+                MessageBox.Show(fail, "Release Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            var ghExe = ghPath!;
+            var token = GitHubTokenBox.Password.Trim();
+            var ghEnv = new Dictionary<string, string>();
+            if (token.Length > 0) {
+                ghEnv["GH_TOKEN"] = token;
+                AppendReleaseLog("Using provided GitHub token for release authentication.");
+            }
 
             BeginRepoAction();
             try {
+                async Task<(int code, string output)> RunGhAsync(string[] args, int timeoutSeconds = 120) {
+                    return await RunCommandAsync(
+                        ghExe,
+                        args,
+                        RepoPath,
+                        timeoutSeconds: timeoutSeconds,
+                        nonInteractive: true,
+                        extraEnv: ghEnv.Count == 0 ? null : ghEnv
+                    );
+                }
+
                 async Task<bool> RunReleaseCommandWithFallbackAsync(bool releaseExists) {
                     var primaryArgs = releaseExists
                         ? new[] { "release", "edit", tag, "--title", title, "--notes", notes }
@@ -339,7 +372,7 @@ namespace Tahera {
                     var primaryLabel = releaseExists ? "gh release edit" : "gh release create";
 
                     AppendOutput($"$ {primaryLabel}");
-                    var primaryRes = await RunCommandAsync("gh", primaryArgs, RepoPath, timeoutSeconds: 120, nonInteractive: true);
+                    var primaryRes = await RunGhAsync(primaryArgs, timeoutSeconds: 120);
                     AppendOutput(primaryRes.output);
                     if (primaryRes.code == 0) {
                         return true;
@@ -366,7 +399,7 @@ namespace Tahera {
                         : "Create reported existing release. Retrying edit.");
 
                     AppendOutput($"$ {fallbackLabel}");
-                    var fallbackRes = await RunCommandAsync("gh", fallbackArgs, RepoPath, timeoutSeconds: 120, nonInteractive: true);
+                    var fallbackRes = await RunGhAsync(fallbackArgs, timeoutSeconds: 120);
                     AppendOutput(fallbackRes.output);
                     if (fallbackRes.code == 0) {
                         return true;
@@ -381,7 +414,7 @@ namespace Tahera {
 
                 async Task<string?> LookupReleaseUrlAsync(int attemptsRemaining) {
                     AppendOutput("$ gh release url");
-                    var urlRes = await RunCommandAsync("gh", new[] { "release", "view", tag, "--json", "url", "--jq", ".url" }, RepoPath, timeoutSeconds: 30, nonInteractive: true);
+                    var urlRes = await RunGhAsync(new[] { "release", "view", tag, "--json", "url", "--jq", ".url" }, timeoutSeconds: 30);
                     AppendOutput(urlRes.output);
                     var releaseUrl = FirstNonEmptyLine(urlRes.output);
                     if (urlRes.code == 0 && !string.IsNullOrWhiteSpace(releaseUrl)) {
@@ -407,19 +440,21 @@ namespace Tahera {
                 }
                 AppendReleaseLog("Tags pushed to origin.");
 
-                AppendOutput("$ gh auth status");
-                var auth = await RunCommandAsync("gh", new[] { "auth", "status", "--hostname", "github.com" }, RepoPath, timeoutSeconds: 30, nonInteractive: true);
-                AppendOutput(auth.output);
-                if (auth.code != 0) {
-                    var fail = ReleaseFailureMessage("Release failed: GitHub CLI is not authenticated. Run gh auth login and retry.", auth.output);
-                    AppendReleaseLog(fail);
-                    SetReleaseStatus(false, fail);
-                    MessageBox.Show(fail, "Release Failed", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
+                if (ghEnv.Count == 0) {
+                    AppendOutput("$ gh auth status");
+                    var auth = await RunGhAsync(new[] { "auth", "status", "--hostname", "github.com" }, timeoutSeconds: 30);
+                    AppendOutput(auth.output);
+                    if (auth.code != 0) {
+                        var fail = ReleaseFailureMessage("Release failed: GitHub CLI is not authenticated. Run gh auth login or paste a token in Tahera and retry.", auth.output);
+                        AppendReleaseLog(fail);
+                        SetReleaseStatus(false, fail);
+                        MessageBox.Show(fail, "Release Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
                 }
 
                 AppendOutput($"$ gh release view {tag} --json id");
-                var existing = await RunCommandAsync("gh", new[] { "release", "view", tag, "--json", "id", "--jq", ".id" }, RepoPath, timeoutSeconds: 45, nonInteractive: true);
+                var existing = await RunGhAsync(new[] { "release", "view", tag, "--json", "id", "--jq", ".id" }, timeoutSeconds: 45);
                 AppendOutput(existing.output);
                 var releaseExists = false;
                 if (existing.code == 0) {
@@ -765,6 +800,48 @@ namespace Tahera {
                 if (trimmed.Length > 0) return trimmed;
             }
             return string.Empty;
+        }
+
+        private string? ResolveGhExecutable() {
+            if (!string.IsNullOrWhiteSpace(_resolvedGhPath) && File.Exists(_resolvedGhPath)) {
+                return _resolvedGhPath;
+            }
+
+            var candidates = new List<string>();
+            var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+            if (!string.IsNullOrWhiteSpace(programFiles)) {
+                candidates.Add(Path.Combine(programFiles, "GitHub CLI", "gh.exe"));
+            }
+
+            var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            if (!string.IsNullOrWhiteSpace(localAppData)) {
+                candidates.Add(Path.Combine(localAppData, "Programs", "GitHub CLI", "gh.exe"));
+            }
+
+            var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            if (!string.IsNullOrWhiteSpace(userProfile)) {
+                candidates.Add(Path.Combine(userProfile, "scoop", "apps", "gh", "current", "bin", "gh.exe"));
+            }
+
+            var path = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
+            foreach (var segment in path.Split(Path.PathSeparator)) {
+                var dir = segment.Trim();
+                if (dir.Length == 0) continue;
+                candidates.Add(Path.Combine(dir, "gh.exe"));
+            }
+
+            foreach (var candidate in candidates.Distinct(StringComparer.OrdinalIgnoreCase)) {
+                try {
+                    if (File.Exists(candidate)) {
+                        _resolvedGhPath = candidate;
+                        return _resolvedGhPath;
+                    }
+                } catch {
+                    // Continue checking remaining candidates.
+                }
+            }
+
+            return null;
         }
 
         private static bool IsReleaseNotFoundError(string output) {

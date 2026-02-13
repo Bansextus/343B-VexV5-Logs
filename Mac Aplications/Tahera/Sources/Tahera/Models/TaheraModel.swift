@@ -34,6 +34,7 @@ final class TaheraModel: ObservableObject {
     @Published var gitTagMessage: String = ""
     @Published var gitReleaseTitle: String = ""
     @Published var gitReleaseNotes: String = ""
+    @Published var githubToken: String = ""
     @Published var releaseLog: String = ""
     @Published var releaseStatusMessage: String = ""
     @Published var releaseStatusIsSuccess: Bool = false
@@ -122,6 +123,32 @@ final class TaheraModel: ObservableObject {
         return "\(defaultMessage) \(detail)"
     }
 
+    private func resolveExecutable(_ name: String, preferredPaths: [String]) -> String? {
+        let fm = FileManager.default
+        for path in preferredPaths where fm.isExecutableFile(atPath: path) {
+            return path
+        }
+        if let pathEnv = ProcessInfo.processInfo.environment["PATH"] {
+            for rawDir in pathEnv.components(separatedBy: ":") {
+                let dir = rawDir.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !dir.isEmpty else { continue }
+                let candidate = URL(fileURLWithPath: dir).appendingPathComponent(name).path
+                if fm.isExecutableFile(atPath: candidate) {
+                    return candidate
+                }
+            }
+        }
+        return nil
+    }
+
+    private func ghExecutablePath() -> String? {
+        resolveExecutable("gh", preferredPaths: [
+            "/opt/homebrew/bin/gh",
+            "/usr/local/bin/gh",
+            "/usr/bin/gh"
+        ])
+    }
+
     private func beginBusy() {
         busyQueue.async {
             self.busyCount += 1
@@ -148,6 +175,7 @@ final class TaheraModel: ObservableObject {
         label: String,
         timeoutSeconds: TimeInterval = 240,
         nonInteractive: Bool = false,
+        extraEnv: [String: String] = [:],
         completion: ((Int32) -> Void)? = nil
     ) {
         beginBusy()
@@ -168,6 +196,9 @@ final class TaheraModel: ObservableObject {
                 env["GCM_INTERACTIVE"] = "Never"
                 env["GH_PROMPT_DISABLED"] = "1"
                 env["CI"] = "1"
+            }
+            for (key, value) in extraEnv {
+                env[key] = value
             }
             process.environment = env
             if let cwd {
@@ -230,6 +261,7 @@ final class TaheraModel: ObservableObject {
         label: String,
         timeoutSeconds: TimeInterval = 240,
         nonInteractive: Bool = false,
+        extraEnv: [String: String] = [:],
         completion: @escaping (Int32, String) -> Void
     ) {
         beginBusy()
@@ -249,6 +281,9 @@ final class TaheraModel: ObservableObject {
                 env["GCM_INTERACTIVE"] = "Never"
                 env["GH_PROMPT_DISABLED"] = "1"
                 env["CI"] = "1"
+            }
+            for (key, value) in extraEnv {
+                env[key] = value
             }
             process.environment = env
             if let cwd {
@@ -393,14 +428,27 @@ final class TaheraModel: ObservableObject {
             self.releaseStatusMessage = "Starting release for tag \(t)..."
         }
         appendReleaseLog("Starting release flow for tag \(t).")
+        guard let ghPath = ghExecutablePath() else {
+            updateReleaseStatus(
+                success: false,
+                message: "Release failed: GitHub CLI (gh) was not found. Install GitHub CLI and restart Tahera."
+            )
+            return
+        }
+        let token = githubToken.trimmingCharacters(in: .whitespacesAndNewlines)
+        let ghEnv: [String: String] = token.isEmpty ? [:] : ["GH_TOKEN": token]
+        if !token.isEmpty {
+            appendReleaseLog("Using provided GitHub token for release authentication.")
+        }
 
         func lookupReleaseURL(attemptsRemaining: Int, completion: @escaping (String?) -> Void) {
             self.runCommandCapture(
-                ["/usr/bin/env", "gh", "release", "view", t, "--json", "url", "--jq", ".url"],
+                [ghPath, "release", "view", t, "--json", "url", "--jq", ".url"],
                 cwd: self.repoPath,
                 label: "gh release url \(t)",
                 timeoutSeconds: 30,
-                nonInteractive: true
+                nonInteractive: true,
+                extraEnv: ghEnv
             ) { status, output in
                 let url = self.firstMeaningfulLine(output)
                 if status == 0 && !url.isEmpty {
@@ -435,18 +483,18 @@ final class TaheraModel: ObservableObject {
             let fallbackLabel: String
 
             if exists {
-                primaryCmd = ["/usr/bin/env", "gh", "release", "edit", t, "--title", title, "--notes", notes]
+                primaryCmd = [ghPath, "release", "edit", t, "--title", title, "--notes", notes]
                 primaryLabel = "gh release edit \(t)"
-                fallbackCmd = ["/usr/bin/env", "gh", "release", "create", t, "--title", title, "--notes", notes]
+                fallbackCmd = [ghPath, "release", "create", t, "--title", title, "--notes", notes]
                 fallbackLabel = "gh release create \(t)"
             } else {
-                primaryCmd = ["/usr/bin/env", "gh", "release", "create", t, "--title", title, "--notes", notes]
+                primaryCmd = [ghPath, "release", "create", t, "--title", title, "--notes", notes]
                 primaryLabel = "gh release create \(t)"
-                fallbackCmd = ["/usr/bin/env", "gh", "release", "edit", t, "--title", title, "--notes", notes]
+                fallbackCmd = [ghPath, "release", "edit", t, "--title", title, "--notes", notes]
                 fallbackLabel = "gh release edit \(t)"
             }
 
-            self.runCommandCapture(primaryCmd, cwd: self.repoPath, label: primaryLabel, timeoutSeconds: 120, nonInteractive: true) { status, output in
+            self.runCommandCapture(primaryCmd, cwd: self.repoPath, label: primaryLabel, timeoutSeconds: 120, nonInteractive: true, extraEnv: ghEnv) { status, output in
                 if status == 0 {
                     finalizeReleaseSuccess()
                     return
@@ -473,7 +521,7 @@ final class TaheraModel: ObservableObject {
                     return
                 }
 
-                self.runCommandCapture(fallbackCmd, cwd: self.repoPath, label: fallbackLabel, timeoutSeconds: 120, nonInteractive: true) { fallbackStatus, fallbackOutput in
+                self.runCommandCapture(fallbackCmd, cwd: self.repoPath, label: fallbackLabel, timeoutSeconds: 120, nonInteractive: true, extraEnv: ghEnv) { fallbackStatus, fallbackOutput in
                     guard fallbackStatus == 0 else {
                         self.updateReleaseStatus(
                             success: false,
@@ -498,29 +546,14 @@ final class TaheraModel: ObservableObject {
             }
             self.appendReleaseLog("Tags pushed to origin.")
 
-            self.runCommandCapture(
-                ["/usr/bin/env", "gh", "auth", "status", "--hostname", "github.com"],
-                cwd: self.repoPath,
-                label: "gh auth status",
-                timeoutSeconds: 30,
-                nonInteractive: true
-            ) { authStatus, authOutput in
-                guard authStatus == 0 else {
-                    let detail = self.firstMeaningfulLine(authOutput)
-                    let extra = detail.isEmpty ? "" : " (\(detail))"
-                    self.updateReleaseStatus(
-                        success: false,
-                        message: "Release failed: GitHub CLI is not authenticated. Run gh auth login and retry.\(extra)"
-                    )
-                    return
-                }
-
+            let continueWithReleaseCheck: () -> Void = {
                 self.runCommandCapture(
-                    ["/usr/bin/env", "gh", "release", "view", t, "--json", "id", "--jq", ".id"],
+                    [ghPath, "release", "view", t, "--json", "id", "--jq", ".id"],
                     cwd: self.repoPath,
                     label: "gh release view \(t) --json id",
                     timeoutSeconds: 45,
-                    nonInteractive: true
+                    nonInteractive: true,
+                    extraEnv: ghEnv
                 ) { viewStatus, viewOutput in
                     if viewStatus == 0 {
                         self.appendReleaseLog("Existing release detected. Editing release.")
@@ -538,6 +571,30 @@ final class TaheraModel: ObservableObject {
                         message: self.releaseFailureMessage(defaultMessage: "Release failed while checking whether the release exists.", output: viewOutput)
                     )
                 }
+            }
+
+            if !token.isEmpty {
+                continueWithReleaseCheck()
+                return
+            }
+
+            self.runCommandCapture(
+                [ghPath, "auth", "status", "--hostname", "github.com"],
+                cwd: self.repoPath,
+                label: "gh auth status",
+                timeoutSeconds: 30,
+                nonInteractive: true
+            ) { authStatus, authOutput in
+                guard authStatus == 0 else {
+                    let detail = self.firstMeaningfulLine(authOutput)
+                    let extra = detail.isEmpty ? "" : " (\(detail))"
+                    self.updateReleaseStatus(
+                        success: false,
+                        message: "Release failed: GitHub CLI is not authenticated. Run gh auth login or paste a token in Tahera and retry.\(extra)"
+                    )
+                    return
+                }
+                continueWithReleaseCheck()
             }
         }
     }

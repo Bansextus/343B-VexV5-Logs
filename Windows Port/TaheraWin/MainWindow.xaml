@@ -234,6 +234,8 @@
             <Border Background="{StaticResource CardBrush}" Padding="18" CornerRadius="12" Margin="0,16,0,0">
               <StackPanel>
                 <TextBlock Text="Tag / Release" Foreground="{StaticResource SubBrush}"/>
+                <TextBlock Text="GitHub Token (optional)" Foreground="{StaticResource SubBrush}" Margin="0,10,0,0"/>
+                <PasswordBox x:Name="GitHubTokenBox" Margin="0,10,0,0"/>
                 <TextBox x:Name="TagTextBox" Margin="0,10,0,0"/>
                 <TextBox x:Name="TagMessageTextBox" Margin="0,10,0,0"/>
                 <TextBox x:Name="ReleaseTitleTextBox" Margin="0,10,0,0"/>
