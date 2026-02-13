@@ -332,11 +332,73 @@ namespace Tahera {
 
             BeginRepoAction();
             try {
+                async Task<bool> RunReleaseCommandWithFallbackAsync(bool releaseExists) {
+                    var primaryArgs = releaseExists
+                        ? new[] { "release", "edit", tag, "--title", title, "--notes", notes }
+                        : new[] { "release", "create", tag, "--title", title, "--notes", notes };
+                    var primaryLabel = releaseExists ? "gh release edit" : "gh release create";
+
+                    AppendOutput($"$ {primaryLabel}");
+                    var primaryRes = await RunCommandAsync("gh", primaryArgs, RepoPath, timeoutSeconds: 120, nonInteractive: true);
+                    AppendOutput(primaryRes.output);
+                    if (primaryRes.code == 0) {
+                        return true;
+                    }
+
+                    var shouldFallback = releaseExists
+                        ? IsReleaseNotFoundError(primaryRes.output)
+                        : IsReleaseAlreadyExistsError(primaryRes.output);
+
+                    if (!shouldFallback) {
+                        var fail = ReleaseFailureMessage($"Release failed during {primaryLabel} {tag}.", primaryRes.output);
+                        AppendReleaseLog(fail);
+                        SetReleaseStatus(false, fail);
+                        MessageBox.Show(fail, "Release Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return false;
+                    }
+
+                    var fallbackArgs = releaseExists
+                        ? new[] { "release", "create", tag, "--title", title, "--notes", notes }
+                        : new[] { "release", "edit", tag, "--title", title, "--notes", notes };
+                    var fallbackLabel = releaseExists ? "gh release create" : "gh release edit";
+                    AppendReleaseLog(releaseExists
+                        ? "Edit reported release missing. Retrying create."
+                        : "Create reported existing release. Retrying edit.");
+
+                    AppendOutput($"$ {fallbackLabel}");
+                    var fallbackRes = await RunCommandAsync("gh", fallbackArgs, RepoPath, timeoutSeconds: 120, nonInteractive: true);
+                    AppendOutput(fallbackRes.output);
+                    if (fallbackRes.code == 0) {
+                        return true;
+                    }
+
+                    var fallbackFail = ReleaseFailureMessage($"Release failed during {fallbackLabel} {tag}.", fallbackRes.output);
+                    AppendReleaseLog(fallbackFail);
+                    SetReleaseStatus(false, fallbackFail);
+                    MessageBox.Show(fallbackFail, "Release Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return false;
+                }
+
+                async Task<string?> LookupReleaseUrlAsync(int attemptsRemaining) {
+                    AppendOutput("$ gh release url");
+                    var urlRes = await RunCommandAsync("gh", new[] { "release", "view", tag, "--json", "url", "--jq", ".url" }, RepoPath, timeoutSeconds: 30, nonInteractive: true);
+                    AppendOutput(urlRes.output);
+                    var releaseUrl = FirstNonEmptyLine(urlRes.output);
+                    if (urlRes.code == 0 && !string.IsNullOrWhiteSpace(releaseUrl)) {
+                        return releaseUrl;
+                    }
+                    if (attemptsRemaining > 1) {
+                        await Task.Delay(1000);
+                        return await LookupReleaseUrlAsync(attemptsRemaining - 1);
+                    }
+                    return null;
+                }
+
                 AppendOutput("$ git push --tags");
                 var pushTags = await RunCommandAsync("git", new[] { "push", "--tags" }, RepoPath, timeoutSeconds: 90, nonInteractive: true);
                 AppendOutput(pushTags.output);
                 if (pushTags.code != 0) {
-                    var fail = "Release failed: unable to push tags to origin.";
+                    var fail = ReleaseFailureMessage("Release failed: unable to push tags to origin.", pushTags.output);
                     AppendOutput(fail);
                     AppendReleaseLog(fail);
                     SetReleaseStatus(false, fail);
@@ -345,45 +407,43 @@ namespace Tahera {
                 }
                 AppendReleaseLog("Tags pushed to origin.");
 
-                AppendOutput($"$ gh release view {tag}");
-                var existing = await RunCommandAsync("gh", new[] { "release", "view", tag }, RepoPath, timeoutSeconds: 45, nonInteractive: true);
-                AppendOutput(existing.output);
+                AppendOutput("$ gh auth status");
+                var auth = await RunCommandAsync("gh", new[] { "auth", "status", "--hostname", "github.com" }, RepoPath, timeoutSeconds: 30, nonInteractive: true);
+                AppendOutput(auth.output);
+                if (auth.code != 0) {
+                    var fail = ReleaseFailureMessage("Release failed: GitHub CLI is not authenticated. Run gh auth login and retry.", auth.output);
+                    AppendReleaseLog(fail);
+                    SetReleaseStatus(false, fail);
+                    MessageBox.Show(fail, "Release Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
 
+                AppendOutput($"$ gh release view {tag} --json id");
+                var existing = await RunCommandAsync("gh", new[] { "release", "view", tag, "--json", "id", "--jq", ".id" }, RepoPath, timeoutSeconds: 45, nonInteractive: true);
+                AppendOutput(existing.output);
+                var releaseExists = false;
                 if (existing.code == 0) {
+                    releaseExists = true;
                     AppendReleaseLog("Existing release detected. Editing release.");
-                    AppendOutput("$ gh release edit");
-                    var editRes = await RunCommandAsync("gh", new[] { "release", "edit", tag, "--title", title, "--notes", notes }, RepoPath, timeoutSeconds: 120, nonInteractive: true);
-                    AppendOutput(editRes.output);
-                    if (editRes.code != 0) {
-                        var fail = $"Release failed during gh release edit {tag}.";
-                        AppendReleaseLog(fail);
-                        SetReleaseStatus(false, fail);
-                        MessageBox.Show(fail, "Release Failed", MessageBoxButton.OK, MessageBoxImage.Error);
-                        return;
-                    }
-                } else {
+                } else if (IsReleaseNotFoundError(existing.output)) {
                     AppendReleaseLog("No release detected. Creating release.");
-                    AppendOutput("$ gh release create");
-                    var createRes = await RunCommandAsync("gh", new[] { "release", "create", tag, "--title", title, "--notes", notes }, RepoPath, timeoutSeconds: 120, nonInteractive: true);
-                    AppendOutput(createRes.output);
-                    if (createRes.code != 0) {
-                        var fail = $"Release failed during gh release create {tag}.";
-                        AppendReleaseLog(fail);
-                        SetReleaseStatus(false, fail);
-                        MessageBox.Show(fail, "Release Failed", MessageBoxButton.OK, MessageBoxImage.Error);
-                        return;
-                    }
+                } else {
+                    var fail = ReleaseFailureMessage("Release failed while checking whether the release exists.", existing.output);
+                    AppendReleaseLog(fail);
+                    SetReleaseStatus(false, fail);
+                    MessageBox.Show(fail, "Release Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                if (!await RunReleaseCommandWithFallbackAsync(releaseExists)) {
+                    return;
                 }
 
                 AppendReleaseLog("Release command completed.");
-                AppendOutput("$ gh release url");
-                var urlRes = await RunCommandAsync("gh", new[] { "release", "view", tag, "--json", "url", "--jq", ".url" }, RepoPath, timeoutSeconds: 30, nonInteractive: true);
-                AppendOutput(urlRes.output);
-
-                var releaseUrl = FirstNonEmptyLine(urlRes.output);
+                var releaseUrl = await LookupReleaseUrlAsync(3);
                 var successMsg = !string.IsNullOrWhiteSpace(releaseUrl)
                     ? $"Release succeeded: {releaseUrl}"
-                    : $"Release succeeded for tag {tag}.";
+                    : $"Release succeeded for tag {tag}, but URL lookup failed.";
                 AppendReleaseLog(successMsg);
                 SetReleaseStatus(true, successMsg);
                 MessageBox.Show(successMsg, "Release Succeeded", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -705,6 +765,21 @@ namespace Tahera {
                 if (trimmed.Length > 0) return trimmed;
             }
             return string.Empty;
+        }
+
+        private static bool IsReleaseNotFoundError(string output) {
+            var lower = output.ToLowerInvariant();
+            return lower.Contains("release not found") || (lower.Contains("not found") && lower.Contains("release"));
+        }
+
+        private static bool IsReleaseAlreadyExistsError(string output) {
+            var lower = output.ToLowerInvariant();
+            return lower.Contains("already exists") || lower.Contains("already a release");
+        }
+
+        private static string ReleaseFailureMessage(string defaultMessage, string output) {
+            var detail = FirstNonEmptyLine(output);
+            return detail.Length == 0 ? defaultMessage : $"{defaultMessage} {detail}";
         }
 
         private static string? firstExisting(params string[] candidates) {

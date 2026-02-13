@@ -94,6 +94,34 @@ final class TaheraModel: ObservableObject {
         appendReleaseLog(message)
     }
 
+    private func firstMeaningfulLine(_ text: String) -> String {
+        for line in text.components(separatedBy: .newlines) {
+            let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty {
+                return trimmed
+            }
+        }
+        return ""
+    }
+
+    private func isReleaseNotFoundError(_ output: String) -> Bool {
+        let lower = output.lowercased()
+        return lower.contains("release not found") || (lower.contains("not found") && lower.contains("release"))
+    }
+
+    private func isReleaseAlreadyExistsError(_ output: String) -> Bool {
+        let lower = output.lowercased()
+        return lower.contains("already exists") || lower.contains("already a release")
+    }
+
+    private func releaseFailureMessage(defaultMessage: String, output: String) -> String {
+        let detail = firstMeaningfulLine(output)
+        if detail.isEmpty {
+            return defaultMessage
+        }
+        return "\(defaultMessage) \(detail)"
+    }
+
     private func beginBusy() {
         busyQueue.async {
             self.busyCount += 1
@@ -196,6 +224,98 @@ final class TaheraModel: ObservableObject {
         }
     }
 
+    private func runCommandCapture(
+        _ cmd: [String],
+        cwd: String? = nil,
+        label: String,
+        timeoutSeconds: TimeInterval = 240,
+        nonInteractive: Bool = false,
+        completion: @escaping (Int32, String) -> Void
+    ) {
+        beginBusy()
+        appendLog("$ \(label)")
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            defer {
+                self.endBusy()
+            }
+
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: cmd.first ?? "")
+            process.arguments = Array(cmd.dropFirst())
+            var env = ProcessInfo.processInfo.environment
+            if nonInteractive {
+                env["GIT_TERMINAL_PROMPT"] = "0"
+                env["GCM_INTERACTIVE"] = "Never"
+                env["GH_PROMPT_DISABLED"] = "1"
+                env["CI"] = "1"
+            }
+            process.environment = env
+            if let cwd {
+                process.currentDirectoryURL = URL(fileURLWithPath: cwd)
+            }
+
+            let pipe = Pipe()
+            process.standardOutput = pipe
+            process.standardError = pipe
+            let inputPipe = Pipe()
+            process.standardInput = inputPipe
+            inputPipe.fileHandleForWriting.closeFile()
+
+            let outputLock = NSLock()
+            var capturedOutput = ""
+
+            do {
+                try process.run()
+            } catch {
+                let text = "Failed: \(error.localizedDescription)"
+                self.appendLog(text)
+                completion(-1, text)
+                return
+            }
+
+            let handle = pipe.fileHandleForReading
+            handle.readabilityHandler = { fh in
+                let data = fh.availableData
+                guard !data.isEmpty else { return }
+                guard let text = String(data: data, encoding: .utf8), !text.isEmpty else { return }
+                outputLock.lock()
+                capturedOutput.append(text)
+                outputLock.unlock()
+                self.appendLog(text.trimmingCharacters(in: .newlines))
+            }
+
+            let started = Date()
+            var didTimeout = false
+            while process.isRunning {
+                if Date().timeIntervalSince(started) > timeoutSeconds {
+                    didTimeout = true
+                    process.terminate()
+                    let killDeadline = Date().addingTimeInterval(2.0)
+                    while process.isRunning && Date() < killDeadline {
+                        Thread.sleep(forTimeInterval: 0.05)
+                    }
+                    if process.isRunning {
+                        _ = Darwin.kill(process.processIdentifier, SIGKILL)
+                    }
+                    break
+                }
+                Thread.sleep(forTimeInterval: 0.15)
+            }
+
+            process.waitUntilExit()
+            handle.readabilityHandler = nil
+            if didTimeout {
+                self.appendLog("Failed: command timed out after \(Int(timeoutSeconds))s")
+            }
+
+            outputLock.lock()
+            let output = capturedOutput
+            outputLock.unlock()
+            completion(didTimeout ? -2 : process.terminationStatus, output)
+        }
+    }
+
     private func projectPath(_ project: ProsProject) -> String {
         URL(fileURLWithPath: repoPath).appendingPathComponent(project.relativePath).path
     }
@@ -269,52 +389,154 @@ final class TaheraModel: ObservableObject {
         let title = gitReleaseTitle.isEmpty ? t : gitReleaseTitle
         let notes = gitReleaseNotes
         DispatchQueue.main.async {
-            self.releaseStatusMessage = ""
+            self.releaseStatusIsSuccess = false
+            self.releaseStatusMessage = "Starting release for tag \(t)..."
         }
         appendReleaseLog("Starting release flow for tag \(t).")
 
+        func lookupReleaseURL(attemptsRemaining: Int, completion: @escaping (String?) -> Void) {
+            self.runCommandCapture(
+                ["/usr/bin/env", "gh", "release", "view", t, "--json", "url", "--jq", ".url"],
+                cwd: self.repoPath,
+                label: "gh release url \(t)",
+                timeoutSeconds: 30,
+                nonInteractive: true
+            ) { status, output in
+                let url = self.firstMeaningfulLine(output)
+                if status == 0 && !url.isEmpty {
+                    completion(url)
+                    return
+                }
+                if attemptsRemaining > 1 {
+                    DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 1.0) {
+                        lookupReleaseURL(attemptsRemaining: attemptsRemaining - 1, completion: completion)
+                    }
+                } else {
+                    completion(nil)
+                }
+            }
+        }
+
+        func finalizeReleaseSuccess() {
+            self.appendReleaseLog("Release command completed.")
+            lookupReleaseURL(attemptsRemaining: 3) { url in
+                if let url, !url.isEmpty {
+                    self.updateReleaseStatus(success: true, message: "Release succeeded: \(url)")
+                } else {
+                    self.updateReleaseStatus(success: true, message: "Release succeeded for tag \(t), but URL lookup failed.")
+                }
+            }
+        }
+
+        func runReleaseCreateOrEdit(exists: Bool) {
+            let primaryCmd: [String]
+            let primaryLabel: String
+            let fallbackCmd: [String]
+            let fallbackLabel: String
+
+            if exists {
+                primaryCmd = ["/usr/bin/env", "gh", "release", "edit", t, "--title", title, "--notes", notes]
+                primaryLabel = "gh release edit \(t)"
+                fallbackCmd = ["/usr/bin/env", "gh", "release", "create", t, "--title", title, "--notes", notes]
+                fallbackLabel = "gh release create \(t)"
+            } else {
+                primaryCmd = ["/usr/bin/env", "gh", "release", "create", t, "--title", title, "--notes", notes]
+                primaryLabel = "gh release create \(t)"
+                fallbackCmd = ["/usr/bin/env", "gh", "release", "edit", t, "--title", title, "--notes", notes]
+                fallbackLabel = "gh release edit \(t)"
+            }
+
+            self.runCommandCapture(primaryCmd, cwd: self.repoPath, label: primaryLabel, timeoutSeconds: 120, nonInteractive: true) { status, output in
+                if status == 0 {
+                    finalizeReleaseSuccess()
+                    return
+                }
+
+                let shouldFallback: Bool
+                if exists {
+                    shouldFallback = self.isReleaseNotFoundError(output)
+                    if shouldFallback {
+                        self.appendReleaseLog("Edit reported release missing. Retrying create.")
+                    }
+                } else {
+                    shouldFallback = self.isReleaseAlreadyExistsError(output)
+                    if shouldFallback {
+                        self.appendReleaseLog("Create reported existing release. Retrying edit.")
+                    }
+                }
+
+                guard shouldFallback else {
+                    self.updateReleaseStatus(
+                        success: false,
+                        message: self.releaseFailureMessage(defaultMessage: "Release failed during \(primaryLabel).", output: output)
+                    )
+                    return
+                }
+
+                self.runCommandCapture(fallbackCmd, cwd: self.repoPath, label: fallbackLabel, timeoutSeconds: 120, nonInteractive: true) { fallbackStatus, fallbackOutput in
+                    guard fallbackStatus == 0 else {
+                        self.updateReleaseStatus(
+                            success: false,
+                            message: self.releaseFailureMessage(defaultMessage: "Release failed during \(fallbackLabel).", output: fallbackOutput)
+                        )
+                        return
+                    }
+                    finalizeReleaseSuccess()
+                }
+            }
+        }
+
         // Keep tags in sync on origin so GitHub.com reflects the release state.
-        runCommand(["/usr/bin/git", "push", "--tags"], cwd: repoPath, label: "git push --tags", timeoutSeconds: 90, nonInteractive: true) { pushStatus in
+        runCommandCapture(["/usr/bin/git", "push", "--tags"], cwd: repoPath, label: "git push --tags", timeoutSeconds: 90, nonInteractive: true) { pushStatus, pushOutput in
             guard pushStatus == 0 else {
                 self.appendLog("Release aborted: unable to push tags to origin.")
-                self.updateReleaseStatus(success: false, message: "Release failed: unable to push tags to origin.")
+                self.updateReleaseStatus(
+                    success: false,
+                    message: self.releaseFailureMessage(defaultMessage: "Release failed: unable to push tags to origin.", output: pushOutput)
+                )
                 return
             }
             self.appendReleaseLog("Tags pushed to origin.")
 
-            self.runCommand(["/usr/bin/env", "gh", "release", "view", t], cwd: self.repoPath, label: "gh release view \(t)", timeoutSeconds: 45, nonInteractive: true) { viewStatus in
-                let releaseCmd: [String]
-                let releaseLabel: String
-
-                if viewStatus == 0 {
-                    releaseCmd = ["/usr/bin/env", "gh", "release", "edit", t, "--title", title, "--notes", notes]
-                    releaseLabel = "gh release edit \(t)"
-                    self.appendReleaseLog("Existing release detected. Editing release.")
-                } else {
-                    releaseCmd = ["/usr/bin/env", "gh", "release", "create", t, "--title", title, "--notes", notes]
-                    releaseLabel = "gh release create \(t)"
-                    self.appendReleaseLog("No release detected. Creating release.")
+            self.runCommandCapture(
+                ["/usr/bin/env", "gh", "auth", "status", "--hostname", "github.com"],
+                cwd: self.repoPath,
+                label: "gh auth status",
+                timeoutSeconds: 30,
+                nonInteractive: true
+            ) { authStatus, authOutput in
+                guard authStatus == 0 else {
+                    let detail = self.firstMeaningfulLine(authOutput)
+                    let extra = detail.isEmpty ? "" : " (\(detail))"
+                    self.updateReleaseStatus(
+                        success: false,
+                        message: "Release failed: GitHub CLI is not authenticated. Run gh auth login and retry.\(extra)"
+                    )
+                    return
                 }
 
-                self.runCommand(releaseCmd, cwd: self.repoPath, label: releaseLabel, timeoutSeconds: 120, nonInteractive: true) { releaseStatus in
-                    guard releaseStatus == 0 else {
-                        self.updateReleaseStatus(success: false, message: "Release failed during \(releaseLabel).")
+                self.runCommandCapture(
+                    ["/usr/bin/env", "gh", "release", "view", t, "--json", "id", "--jq", ".id"],
+                    cwd: self.repoPath,
+                    label: "gh release view \(t) --json id",
+                    timeoutSeconds: 45,
+                    nonInteractive: true
+                ) { viewStatus, viewOutput in
+                    if viewStatus == 0 {
+                        self.appendReleaseLog("Existing release detected. Editing release.")
+                        runReleaseCreateOrEdit(exists: true)
                         return
                     }
-                    self.appendReleaseLog("Release command completed.")
-                    self.runCommand(
-                        ["/usr/bin/env", "gh", "release", "view", t, "--json", "url", "--jq", ".url"],
-                        cwd: self.repoPath,
-                        label: "gh release url \(t)",
-                        timeoutSeconds: 30,
-                        nonInteractive: true
-                    ) { urlStatus in
-                        if urlStatus == 0 {
-                            self.updateReleaseStatus(success: true, message: "Release succeeded for tag \(t).")
-                        } else {
-                            self.updateReleaseStatus(success: true, message: "Release succeeded for tag \(t), but URL lookup failed.")
-                        }
+                    if self.isReleaseNotFoundError(viewOutput) {
+                        self.appendReleaseLog("No release detected. Creating release.")
+                        runReleaseCreateOrEdit(exists: false)
+                        return
                     }
+
+                    self.updateReleaseStatus(
+                        success: false,
+                        message: self.releaseFailureMessage(defaultMessage: "Release failed while checking whether the release exists.", output: viewOutput)
+                    )
                 }
             }
         }
