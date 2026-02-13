@@ -15,9 +15,7 @@ pros::MotorGroup left_drive({-1, 2, -3}, pros::v5::MotorGears::blue);
 pros::MotorGroup right_drive({4, -5, 6}, pros::v5::MotorGears::blue);
 
 pros::Motor intake_left(7, pros::v5::MotorGears::blue);
-pros::Motor intake_right(-8, pros::v5::MotorGears::blue);
-pros::Motor outtake_left(9, pros::v5::MotorGears::blue);
-pros::Motor outtake_right(-12, pros::v5::MotorGears::blue);
+pros::Motor intake_right(8, pros::v5::MotorGears::blue);
 
 pros::Controller master(pros::E_CONTROLLER_MASTER);
 pros::Imu imu(11);
@@ -271,12 +269,12 @@ void run_plan(const Step* plan, std::size_t count) {
                 intake_right.brake();
                 break;
             case StepType::OUTTAKE_ON:
-                outtake_left.move(127);
-                outtake_right.move(127);
+                intake_left.move(-127);
+                intake_right.move(-127);
                 break;
             case StepType::OUTTAKE_OFF:
-                outtake_left.brake();
-                outtake_right.brake();
+                intake_left.brake();
+                intake_right.brake();
                 break;
         }
     }
@@ -813,25 +811,19 @@ void opcontrol() {
         // --- LEFT SIDE INTAKE + OUTTAKE (L1/L2) ---
         if (master.get_digital(DIGITAL_L1)) {
             intake_left.move(127);
-            outtake_left.move(127);
         } else if (master.get_digital(DIGITAL_L2)) {
             intake_left.move(-127);
-            outtake_left.move(-127);
         } else {
             intake_left.brake();
-            outtake_left.brake();
         }
 
         // --- RIGHT SIDE INTAKE + OUTTAKE (R1/R2) ---
         if (master.get_digital(DIGITAL_R1)) {
             intake_right.move(127);
-            outtake_right.move(127);
         } else if (master.get_digital(DIGITAL_R2)) {
             intake_right.move(-127);
-            outtake_right.move(-127);
         } else {
             intake_right.brake();
-            outtake_right.brake();
         }
 
         pros::delay(20);
