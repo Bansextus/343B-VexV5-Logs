@@ -41,16 +41,33 @@ namespace Tahera {
 
         private string RepoPath => RepoPathTextBox.Text.Trim();
 
-        private async Task<(int code, string output)> RunCommandAsync(string fileName, string args, string? workingDirectory = null) {
-            var psi = new ProcessStartInfo(fileName, args) {
+        private async Task<(int code, string output)> RunCommandAsync(
+            string fileName,
+            IEnumerable<string> args,
+            string? workingDirectory = null,
+            int timeoutSeconds = 180,
+            bool nonInteractive = false
+        ) {
+            var psi = new ProcessStartInfo(fileName) {
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
+                RedirectStandardInput = true,
                 UseShellExecute = false,
                 CreateNoWindow = true
             };
+            foreach (var arg in args) {
+                psi.ArgumentList.Add(arg);
+            }
 
             if (!string.IsNullOrWhiteSpace(workingDirectory)) {
                 psi.WorkingDirectory = workingDirectory;
+            }
+            if (nonInteractive) {
+                // Avoid hangs from credential/password prompts in GUI workflows.
+                psi.Environment["GIT_TERMINAL_PROMPT"] = "0";
+                psi.Environment["GCM_INTERACTIVE"] = "Never";
+                psi.Environment["GH_PROMPT_DISABLED"] = "1";
+                psi.Environment["CI"] = "1";
             }
 
             var sb = new StringBuilder();
@@ -59,9 +76,20 @@ namespace Tahera {
             p.ErrorDataReceived += (_, e) => { if (e.Data != null) sb.AppendLine(e.Data); };
 
             p.Start();
+            p.StandardInput.Close();
             p.BeginOutputReadLine();
             p.BeginErrorReadLine();
-            await p.WaitForExitAsync();
+            var waitTask = p.WaitForExitAsync();
+            var completed = await Task.WhenAny(waitTask, Task.Delay(TimeSpan.FromSeconds(timeoutSeconds)));
+            if (completed != waitTask) {
+                try {
+                    p.Kill(entireProcessTree: true);
+                } catch {
+                    // Best effort kill only.
+                }
+                sb.AppendLine($"Failed: command timed out after {timeoutSeconds}s.");
+                return (-2, sb.ToString());
+            }
             return (p.ExitCode, sb.ToString());
         }
 
@@ -122,7 +150,7 @@ namespace Tahera {
             var p = SelectedProject();
             if (p == null) return;
             AppendOutput($"$ pros make ({p.Value.name})");
-            var result = await RunCommandAsync("cmd", "/c pros make", p.Value.path);
+            var result = await RunCommandAsync("pros", new[] { "make" }, p.Value.path, timeoutSeconds: 600);
             AppendOutput(result.output);
         }
 
@@ -130,7 +158,7 @@ namespace Tahera {
             var p = SelectedProject();
             if (p == null) return;
             AppendOutput($"$ pros upload --slot {p.Value.slot} ({p.Value.name})");
-            var result = await RunCommandAsync("cmd", $"/c pros upload --slot {p.Value.slot}", p.Value.path);
+            var result = await RunCommandAsync("pros", new[] { "upload", "--slot", p.Value.slot.ToString(CultureInfo.InvariantCulture) }, p.Value.path, timeoutSeconds: 600);
             AppendOutput(result.output);
         }
 
@@ -138,11 +166,11 @@ namespace Tahera {
             var p = SelectedProject();
             if (p == null) return;
             AppendOutput($"$ pros make ({p.Value.name})");
-            var build = await RunCommandAsync("cmd", "/c pros make", p.Value.path);
+            var build = await RunCommandAsync("pros", new[] { "make" }, p.Value.path, timeoutSeconds: 600);
             AppendOutput(build.output);
             if (build.code == 0) {
                 AppendOutput($"$ pros upload --slot {p.Value.slot} ({p.Value.name})");
-                var upload = await RunCommandAsync("cmd", $"/c pros upload --slot {p.Value.slot}", p.Value.path);
+                var upload = await RunCommandAsync("pros", new[] { "upload", "--slot", p.Value.slot.ToString(CultureInfo.InvariantCulture) }, p.Value.path, timeoutSeconds: 600);
                 AppendOutput(upload.output);
             }
         }
@@ -179,16 +207,18 @@ namespace Tahera {
             var msg = CommitMessageTextBox.Text.Trim();
             if (msg.Length == 0) return;
             AppendOutput("$ git add -A");
-            await RunCommandAsync("cmd", "/c git add -A", RepoPath);
+            var addRes = await RunCommandAsync("git", new[] { "add", "-A" }, RepoPath, timeoutSeconds: 60, nonInteractive: true);
+            AppendOutput(addRes.output);
+            if (addRes.code != 0) return;
             AppendOutput("$ git commit");
-            var result = await RunCommandAsync("cmd", $"/c git commit -m \"{msg}\"", RepoPath);
+            var result = await RunCommandAsync("git", new[] { "commit", "-m", msg }, RepoPath, timeoutSeconds: 90, nonInteractive: true);
             AppendOutput(result.output);
         }
 
         private async void GitPush_Click(object sender, RoutedEventArgs e) {
             if (!EnsureUnlocked()) return;
             AppendOutput("$ git push");
-            var result = await RunCommandAsync("cmd", "/c git push", RepoPath);
+            var result = await RunCommandAsync("git", new[] { "push" }, RepoPath, timeoutSeconds: 90, nonInteractive: true);
             AppendOutput(result.output);
         }
 
@@ -199,10 +229,11 @@ namespace Tahera {
             var msg = TagMessageTextBox.Text.Trim();
             if (msg.Length == 0) msg = tag;
             AppendOutput("$ git tag");
-            var tagRes = await RunCommandAsync("cmd", $"/c git tag -a {tag} -m \"{msg}\"", RepoPath);
+            var tagRes = await RunCommandAsync("git", new[] { "tag", "-a", tag, "-m", msg }, RepoPath, timeoutSeconds: 60, nonInteractive: true);
             AppendOutput(tagRes.output);
+            if (tagRes.code != 0) return;
             AppendOutput("$ git push --tags");
-            var pushRes = await RunCommandAsync("cmd", "/c git push --tags", RepoPath);
+            var pushRes = await RunCommandAsync("git", new[] { "push", "--tags" }, RepoPath, timeoutSeconds: 90, nonInteractive: true);
             AppendOutput(pushRes.output);
         }
 
@@ -214,7 +245,7 @@ namespace Tahera {
             if (title.Length == 0) title = tag;
             var notes = ReleaseNotesTextBox.Text;
             AppendOutput("$ gh release create");
-            var res = await RunCommandAsync("cmd", $"/c gh release create {tag} --title \"{title}\" --notes \"{notes}\"", RepoPath);
+            var res = await RunCommandAsync("gh", new[] { "release", "create", tag, "--title", title, "--notes", notes }, RepoPath, timeoutSeconds: 120, nonInteractive: true);
             AppendOutput(res.output);
         }
 

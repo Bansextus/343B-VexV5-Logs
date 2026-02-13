@@ -50,6 +50,7 @@ struct GitHubView: View {
                     Button("Commit") { model.gitCommit() }
                     Button("Push") { model.gitPush() }
                 }
+                .disabled(model.isBusy)
             }
 
             Card {
@@ -69,6 +70,13 @@ struct GitHubView: View {
                     Button("Tag + Push") { model.gitTagAndPush() }
                     Button("Create Release") { model.githubRelease() }
                     Button("Lock") { model.lockRepositorySettings() }
+                }
+                .disabled(model.isBusy)
+
+                if model.isBusy {
+                    Text("Running repository command...")
+                        .foregroundColor(Theme.subtext)
+                        .font(.system(size: 13, weight: .medium))
                 }
             }
         }

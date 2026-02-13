@@ -67,7 +67,14 @@ final class TaheraModel: ObservableObject {
         }
     }
 
-    private func runCommand(_ cmd: [String], cwd: String? = nil, label: String, completion: ((Int32) -> Void)? = nil) {
+    private func runCommand(
+        _ cmd: [String],
+        cwd: String? = nil,
+        label: String,
+        timeoutSeconds: TimeInterval = 240,
+        nonInteractive: Bool = false,
+        completion: ((Int32) -> Void)? = nil
+    ) {
         isBusy = true
         appendLog("$ \(label)")
 
@@ -75,6 +82,15 @@ final class TaheraModel: ObservableObject {
             let process = Process()
             process.executableURL = URL(fileURLWithPath: cmd.first ?? "")
             process.arguments = Array(cmd.dropFirst())
+            var env = ProcessInfo.processInfo.environment
+            if nonInteractive {
+                // Fail fast instead of waiting for interactive credentials/prompts.
+                env["GIT_TERMINAL_PROMPT"] = "0"
+                env["GCM_INTERACTIVE"] = "Never"
+                env["GH_PROMPT_DISABLED"] = "1"
+                env["CI"] = "1"
+            }
+            process.environment = env
             if let cwd {
                 process.currentDirectoryURL = URL(fileURLWithPath: cwd)
             }
@@ -82,6 +98,9 @@ final class TaheraModel: ObservableObject {
             let pipe = Pipe()
             process.standardOutput = pipe
             process.standardError = pipe
+            let inputPipe = Pipe()
+            process.standardInput = inputPipe
+            inputPipe.fileHandleForWriting.closeFile()
 
             do {
                 try process.run()
@@ -101,10 +120,23 @@ final class TaheraModel: ObservableObject {
                 }
             }
 
+            let started = Date()
+            var didTimeout = false
+            while process.isRunning {
+                if Date().timeIntervalSince(started) > timeoutSeconds {
+                    didTimeout = true
+                    process.terminate()
+                    break
+                }
+                Thread.sleep(forTimeInterval: 0.15)
+            }
             process.waitUntilExit()
             handle.readabilityHandler = nil
+            if didTimeout {
+                self.appendLog("Failed: command timed out after \(Int(timeoutSeconds))s")
+            }
             DispatchQueue.main.async { self.isBusy = false }
-            completion?(process.terminationStatus)
+            completion?(didTimeout ? -2 : process.terminationStatus)
         }
     }
 
@@ -152,14 +184,15 @@ final class TaheraModel: ObservableObject {
         let path = repoPath
         let msg = gitCommitMessage.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !msg.isEmpty else { return }
-        runCommand(["/usr/bin/git", "add", "-A"], cwd: path, label: "git add -A") { _ in
-            self.runCommand(["/usr/bin/git", "commit", "-m", msg], cwd: path, label: "git commit")
+        runCommand(["/usr/bin/git", "add", "-A"], cwd: path, label: "git add -A", timeoutSeconds: 60, nonInteractive: true) { addStatus in
+            guard addStatus == 0 else { return }
+            self.runCommand(["/usr/bin/git", "commit", "-m", msg], cwd: path, label: "git commit", timeoutSeconds: 90, nonInteractive: true)
         }
     }
 
     func gitPush() {
         guard repoSettingsUnlocked else { return }
-        runCommand(["/usr/bin/git", "push"], cwd: repoPath, label: "git push")
+        runCommand(["/usr/bin/git", "push"], cwd: repoPath, label: "git push", timeoutSeconds: 90, nonInteractive: true)
     }
 
     func gitTagAndPush() {
@@ -167,8 +200,9 @@ final class TaheraModel: ObservableObject {
         let t = gitTag.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !t.isEmpty else { return }
         let msg = gitTagMessage.isEmpty ? t : gitTagMessage
-        runCommand(["/usr/bin/git", "tag", "-a", t, "-m", msg], cwd: repoPath, label: "git tag") { _ in
-            self.runCommand(["/usr/bin/git", "push", "--tags"], cwd: self.repoPath, label: "git push --tags")
+        runCommand(["/usr/bin/git", "tag", "-a", t, "-m", msg], cwd: repoPath, label: "git tag", timeoutSeconds: 60, nonInteractive: true) { tagStatus in
+            guard tagStatus == 0 else { return }
+            self.runCommand(["/usr/bin/git", "push", "--tags"], cwd: self.repoPath, label: "git push --tags", timeoutSeconds: 90, nonInteractive: true)
         }
     }
 
@@ -177,7 +211,7 @@ final class TaheraModel: ObservableObject {
         let t = gitTag.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !t.isEmpty else { return }
         let title = gitReleaseTitle.isEmpty ? t : gitReleaseTitle
-        runCommand(["/usr/bin/env", "gh", "release", "create", t, "--title", title, "--notes", gitReleaseNotes], cwd: repoPath, label: "gh release create")
+        runCommand(["/usr/bin/env", "gh", "release", "create", t, "--title", title, "--notes", gitReleaseNotes], cwd: repoPath, label: "gh release create", timeoutSeconds: 120, nonInteractive: true)
     }
 
     func loadReadme() {
