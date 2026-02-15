@@ -46,6 +46,8 @@ namespace Tahera {
             { "Basic Bonkers", ("Pros projects/Basic_Bonkers_PROS", 4) }
         };
         private readonly string[] _controllerButtons = { "L1", "L2", "R1", "R2", "A", "B", "X", "Y", "UP", "DOWN", "LEFT", "RIGHT" };
+        private readonly string[] _driveModes = { "TANK", "ARCADE_2_STICK", "DPAD" };
+        private string _driveMode = "TANK";
         private readonly Dictionary<string, string> _controllerDefaults = new() {
             { "INTAKE_IN", "L1" },
             { "INTAKE_OUT", "L2" },
@@ -298,6 +300,8 @@ namespace Tahera {
                 combo.ItemsSource = _controllerButtons;
                 combo.SelectionChanged += ControllerMapCombo_SelectionChanged;
             }
+            DriveModeCombo.ItemsSource = _driveModes;
+            DriveModeCombo.SelectedItem = _driveMode;
 
             RepoMapPathTextBox.Text = DefaultRepoControllerMapPath();
             SdMapPathTextBox.Text = @"E:\controller_mapping.txt";
@@ -313,6 +317,7 @@ namespace Tahera {
 
         private void ResetControllerMappingDefaults(bool setStatus = true) {
             _controllerMap.Clear();
+            _driveMode = "TANK";
             foreach (var pair in _controllerDefaults) {
                 _controllerMap[pair.Key] = pair.Value;
             }
@@ -331,6 +336,12 @@ namespace Tahera {
                     pair.Value.SelectedItem = _controllerDefaults[pair.Key];
                 }
             }
+            if (_driveModes.Contains(_driveMode)) {
+                DriveModeCombo.SelectedItem = _driveMode;
+            } else {
+                _driveMode = "TANK";
+                DriveModeCombo.SelectedItem = _driveMode;
+            }
         }
 
         private void CaptureControllerMappingFromUi() {
@@ -340,6 +351,11 @@ namespace Tahera {
                 } else {
                     _controllerMap[pair.Key] = _controllerDefaults[pair.Key];
                 }
+            }
+            if (DriveModeCombo.SelectedItem is string mode && _driveModes.Contains(mode)) {
+                _driveMode = mode;
+            } else {
+                _driveMode = "TANK";
             }
         }
 
@@ -367,8 +383,9 @@ namespace Tahera {
         private string BuildControllerMappingText() {
             var sb = new StringBuilder();
             sb.AppendLine("# Tahera controller mapping");
-            sb.AppendLine("# Format: ACTION=BUTTON");
+            sb.AppendLine("# Format: ACTION=BUTTON (+ DRIVE_MODE)");
             sb.AppendLine("# Valid buttons: L1, L2, R1, R2, A, B, X, Y, UP, DOWN, LEFT, RIGHT");
+            sb.AppendLine($"DRIVE_MODE={_driveMode}");
             sb.AppendLine();
             foreach (var key in _controllerDefaults.Keys) {
                 var value = _controllerMap.TryGetValue(key, out var mapped) ? mapped : _controllerDefaults[key];
@@ -410,6 +427,7 @@ namespace Tahera {
                 }
 
                 var map = new Dictionary<string, string>(_controllerDefaults);
+                var driveMode = "TANK";
                 foreach (var raw in File.ReadAllLines(path)) {
                     var line = raw.Trim();
                     if (line.Length == 0 || line.StartsWith("#")) continue;
@@ -418,6 +436,12 @@ namespace Tahera {
                     if (split.Length != 2) continue;
                     var action = split[0].Trim().ToUpperInvariant();
                     var button = split[1].Trim().ToUpperInvariant();
+                    if (action == "DRIVE_MODE") {
+                        if (_driveModes.Contains(button)) {
+                            driveMode = button;
+                        }
+                        continue;
+                    }
                     if (!_controllerDefaults.ContainsKey(action)) continue;
                     if (!_controllerButtons.Contains(button)) continue;
                     map[action] = button;
@@ -427,6 +451,7 @@ namespace Tahera {
                 foreach (var pair in map) {
                     _controllerMap[pair.Key] = pair.Value;
                 }
+                _driveMode = driveMode;
                 ApplyControllerMappingToUi();
                 UpdateControllerMapConflicts();
                 if (showMessage) {
@@ -446,6 +471,10 @@ namespace Tahera {
         private void ControllerMapCombo_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             CaptureControllerMappingFromUi();
             UpdateControllerMapConflicts();
+        }
+
+        private void DriveModeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            CaptureControllerMappingFromUi();
         }
 
         private void LoadRepoMap_Click(object sender, RoutedEventArgs e) {

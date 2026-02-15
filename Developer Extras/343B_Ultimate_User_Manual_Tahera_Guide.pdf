@@ -1,0 +1,850 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [7 0 R 9 0 R 11 0 R 13 0 R 15 0 R 17 0 R 19 0 R 21 0 R 23 0 R 25 0 R 27 0 R 29 0 R 31 0 R 33 0 R 35 0 R 37 0 R] /Count 16 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+6 0 obj
+<< /Length 1330 >>
+stream
+0.030 0.070 0.150 rg 0 0 612 792 re f
+0.040 0.300 0.560 rg 0 560 612 232 re f
+0.080 0.780 0.500 rg 0 548 612 12 re f
+0.070 0.120 0.200 rg 48 98 516 410 re f
+0.150 0.750 0.700 RG 2.0 w 48 98 516 410 re S
+BT /F2 72 Tf 0.920 0.980 1.000 rg 72.00 680.00 Td (343B) Tj ET
+BT /F1 24 Tf 0.820 0.950 1.000 rg 72.00 636.00 Td (User Manual  Tahera Guide) Tj ET
+BT /F2 16 Tf 0.780 0.950 0.900 rg 72.00 592.00 Td (ULTIMATE OPERATIONS MANUAL) Tj ET
+BT /F2 18 Tf 0.920 0.980 1.000 rg 82.00 500.00 Td (Includes Full Coverage:) Tj ET
+BT /F1 13 Tf 0.920 0.980 1.000 rg 82.00 474.00 Td (- Driver instructions and control mappings) Tj ET
+BT /F1 13 Tf 0.920 0.980 1.000 rg 82.00 452.00 Td (- The Tahera Sequence, Auton Planner, Image Selector, Basic Bonkers) Tj ET
+BT /F1 13 Tf 0.920 0.980 1.000 rg 82.00 430.00 Td (- Repository navigation, build/upload, release, and troubleshooting) Tj ET
+BT /F1 13 Tf 0.920 0.980 1.000 rg 82.00 408.00 Td (- Mac and Windows Tahera app workflows) Tj ET
+BT /F2 17 Tf 0.920 0.980 1.000 rg 82.00 356.00 Td (Credits) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 82.00 334.00 Td (Ethan Baur, Dixon Dean, Lorenzo DiIorio, William Nikodem, George Reed) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 82.00 312.00 Td (St. Albans 343B Robotics) Tj ET
+BT /F3 11 Tf 0.700 0.900 0.820 rg 82.00 138.00 Td (Generated February 14, 2026) Tj ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 6 0 R >>
+endobj
+8 0 obj
+<< /Length 4062 >>
+stream
+0.030 0.070 0.150 rg 0 0 612 792 re f
+0.040 0.300 0.560 rg 0 726 612 66 re f
+0.080 0.780 0.500 rg 0 720 612 6 re f
+BT /F2 20 Tf 0.920 0.980 1.000 rg 52.00 752.00 Td (343B Ultimate Manual) Tj ET
+BT /F1 11 Tf 0.740 0.870 0.950 rg 52.00 734.00 Td (Bonkers + Tahera operating guide for drivers, developers, and release owners) Tj ET
+BT /F2 13 Tf 0.800 0.950 0.920 rg 52.00 710.00 Td (Manual Use) Tj ET
+BT /F3 10 Tf 0.620 0.840 0.800 rg 52.00 30.00 Td (Page 1) Tj ET
+BT /F3 10 Tf 0.620 0.840 0.800 rg 370.00 30.00 Td (343B Robotics - Tahera Guide) Tj ET
+BT /F2 22 Tf 0.860 1.000 0.950 rg 52.00 688.00 Td (How to Use This Manual) Tj ET
+0.080 0.780 0.500 rg 52.00 679.00 300 2 re f
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 656.00 Td (This guide is written as the full operating reference for the 343B stack.) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 640.00 Td (Follow sections in order for first-time setup, then use individual sections) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 624.00 Td (during build days, testing, and competition.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 600.00 Td (- If you are new: read Setup, Slot Map, Driver Controls, and Build/Upload) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 584.00 Td (  first.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 564.00 Td (- If you are tuning autos: focus on Auton Planner, slot files, and Field Replay) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 548.00 Td (  sections.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 528.00 Td (- If you are preparing a release: use Git flow, authentication, and release) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 512.00 Td (  checks sections.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 492.00 Td (- If something fails: jump to Troubleshooting and the command checklist) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 476.00 Td (  appendix.) Tj ET
+0.080 0.180 0.200 rg 52.00 402.00 508.00 60.00 re f
+0.150 0.750 0.700 RG 1.2 w 52.00 402.00 508.00 60.00 re S
+BT /F1 11 Tf 0.830 0.960 0.920 rg 62.00 444.00 Td (This manual describes current repository behavior based on source code in the PROS) Tj ET
+BT /F1 11 Tf 0.830 0.960 0.920 rg 62.00 430.00 Td (projects and Tahera apps. When code changes, regenerate this manual so procedures) Tj ET
+BT /F1 11 Tf 0.830 0.960 0.920 rg 62.00 416.00 Td (stay accurate.) Tj ET
+BT /F2 22 Tf 0.860 1.000 0.950 rg 52.00 384.00 Td (System Overview) Tj ET
+0.080 0.780 0.500 rg 52.00 375.00 300 2 re f
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 352.00 Td (Primary architecture) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 330.00 Td (- V5 Brain programs are built in PROS and uploaded into fixed slots.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 310.00 Td (- Tahera desktop apps \(macOS and Windows\) streamline build, upload, replay, SD,) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 294.00 Td (  and release tasks.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 274.00 Td (- Basic Bonkers records controller activity to microSD logs.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 254.00 Td (- Field Replay visualizes those logs as path overlays on the digital field) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 238.00 Td (  image.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 218.00 Td (- Auton Planner captures and edits movement steps, then saves to three slot) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 202.00 Td (  files on microSD.) Tj ET
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 182.00 Td (Current slot assignment) Tj ET
+0.070 0.120 0.200 rg 52.00 96.00 508.00 70.00 re f
+0.080 0.780 0.500 RG 1.0 w 52.00 96.00 508.00 70.00 re S
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 150.00 Td (Slot 1: The Tahera Sequence \(Pros projects/Tahera_Project\)) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 137.00 Td (Slot 2: Auton Planner \(Pros projects/Auton_Planner_PROS\)) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 124.00 Td (Slot 3: Image Selector \(Pros projects/Jerkbot_Image_Test\)) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 111.00 Td (Slot 4: Basic Bonkers \(Pros projects/Basic_Bonkers_PROS\)) Tj ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 8 0 R >>
+endobj
+10 0 obj
+<< /Length 3474 >>
+stream
+0.030 0.070 0.150 rg 0 0 612 792 re f
+0.040 0.300 0.560 rg 0 726 612 66 re f
+0.080 0.780 0.500 rg 0 720 612 6 re f
+BT /F2 20 Tf 0.920 0.980 1.000 rg 52.00 752.00 Td (343B Ultimate Manual) Tj ET
+BT /F1 11 Tf 0.740 0.870 0.950 rg 52.00 734.00 Td (Bonkers + Tahera operating guide for drivers, developers, and release owners) Tj ET
+BT /F2 13 Tf 0.800 0.950 0.920 rg 52.00 710.00 Td (Hardware Checklist) Tj ET
+BT /F3 10 Tf 0.620 0.840 0.800 rg 52.00 30.00 Td (Page 2) Tj ET
+BT /F3 10 Tf 0.620 0.840 0.800 rg 370.00 30.00 Td (343B Robotics - Tahera Guide) Tj ET
+BT /F2 22 Tf 0.860 1.000 0.950 rg 52.00 688.00 Td (Hardware and Field Checklist) Tj ET
+0.080 0.780 0.500 rg 52.00 679.00 300 2 re f
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 656.00 Td (- V5 Brain with battery, radio, and USB cable.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 636.00 Td (- V5 controller paired to brain \(wireless or tethered\).) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 616.00 Td (- microSD card inserted in brain before logging, planning, or image selection.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 596.00 Td (- Drive motors wired exactly to active port map.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 576.00 Td (- IMU on port 11 and GPS on port 10 for Tahera and Auton Planner features.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 556.00 Td (- Mac or Windows machine with repository cloned and build tools installed.) Tj ET
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 536.00 Td (Recommended pre-drive checks) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 514.00 Td (- Calibrate IMU at startup and wait for calibration to finish.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 494.00 Td (- Verify SD is readable by checking logs or save operations on-brain.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 474.00 Td (- Confirm correct slot is selected before each run.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 454.00 Td (- Clear field around robot before any autonomous run.) Tj ET
+BT /F2 22 Tf 0.860 1.000 0.950 rg 52.00 426.00 Td (Software Setup) Tj ET
+0.080 0.780 0.500 rg 52.00 417.00 300 2 re f
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 394.00 Td (- Install PROS CLI and ensure the `pros` command is available in terminal.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 374.00 Td (- Install Swift toolchain/CommandLineTools for macOS Tahera builds.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 354.00 Td (- Install .NET SDK for Windows Tahera builds.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 334.00 Td (- Install Git and GitHub CLI \(`gh`\) for tag/release actions.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 314.00 Td (- Authenticate GitHub CLI with `gh auth login` before release operations.) Tj ET
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 294.00 Td (Build commands) Tj ET
+0.070 0.120 0.200 rg 52.00 169.00 508.00 109.00 re f
+0.080 0.780 0.500 RG 1.0 w 52.00 169.00 508.00 109.00 re S
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 262.00 Td (# macOS Tahera app) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 249.00 Td (cd 'Mac Aplications/Tahera') Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 236.00 Td (./build_app.sh) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 223.00 Td () Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 210.00 Td (# Windows Tahera app) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 197.00 Td (cd 'Windows Port/TaheraWin') Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 184.00 Td (powershell -ExecutionPolicy Bypass -File build_windows.ps1) Tj ET
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 10 0 R >>
+endobj
+12 0 obj
+<< /Length 3894 >>
+stream
+0.030 0.070 0.150 rg 0 0 612 792 re f
+0.040 0.300 0.560 rg 0 726 612 66 re f
+0.080 0.780 0.500 rg 0 720 612 6 re f
+BT /F2 20 Tf 0.920 0.980 1.000 rg 52.00 752.00 Td (343B Ultimate Manual) Tj ET
+BT /F1 11 Tf 0.740 0.870 0.950 rg 52.00 734.00 Td (Bonkers + Tahera operating guide for drivers, developers, and release owners) Tj ET
+BT /F2 13 Tf 0.800 0.950 0.920 rg 52.00 710.00 Td (Repository Navigation) Tj ET
+BT /F3 10 Tf 0.620 0.840 0.800 rg 52.00 30.00 Td (Page 3) Tj ET
+BT /F3 10 Tf 0.620 0.840 0.800 rg 370.00 30.00 Td (343B Robotics - Tahera Guide) Tj ET
+BT /F2 22 Tf 0.860 1.000 0.950 rg 52.00 688.00 Td (Repository Navigation) Tj ET
+0.080 0.780 0.500 rg 52.00 679.00 300 2 re f
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 656.00 Td (Use this map to find the right location quickly during coding, uploading, and) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 640.00 Td (troubleshooting.) Tj ET
+0.070 0.120 0.200 rg 52.00 435.00 508.00 187.00 re f
+0.080 0.780 0.500 RG 1.0 w 52.00 435.00 508.00 187.00 re S
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 606.00 Td (2026-Vex-V5-Pushback-Code-and-Desighn-/) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 593.00 Td (  README.md) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 580.00 Td (  Pros projects/) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 567.00 Td (    Tahera_Project/) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 554.00 Td (    Auton_Planner_PROS/) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 541.00 Td (    Jerkbot_Image_Test/) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 528.00 Td (    Basic_Bonkers_PROS/) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 515.00 Td (  Mac Aplications/Tahera/) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 502.00 Td (  Windows Port/TaheraWin/) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 489.00 Td (  Windows Port/BonkersFieldReplayWin/) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 476.00 Td (  Developer Extras/Designs/) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 463.00 Td (  tools/bonkers_log_to_field.py) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 450.00 Td (  tools/convert_images_to_bmp.sh) Tj ET
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 425.00 Td (Key files by purpose) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 403.00 Td (- Robot behavior: each project `src/main.cpp` under `Pros projects/...`.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 383.00 Td (- Tahera mac app logic: `Mac) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 367.00 Td (  Aplications/Tahera/Sources/Tahera/Models/TaheraModel.swift`.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 347.00 Td (- Tahera mac sections/UI: `Mac Aplications/Tahera/Sources/Tahera/Views/`.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 327.00 Td (- Tahera windows UI: `Windows Port/TaheraWin/MainWindow.xaml` and `.cs`) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 311.00 Td (  code-behind.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 291.00 Td (- Image assets: `Developer Extras/Designs/` and app resource folders.) Tj ET
+BT /F2 22 Tf 0.860 1.000 0.950 rg 52.00 263.00 Td (Program Matrix and Purpose) Tj ET
+0.080 0.780 0.500 rg 52.00 254.00 300 2 re f
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 231.00 Td (Slot 1 - The Tahera Sequence) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 209.00 Td (- Primary driver code with D-pad override, optional GPS heading assist, and 6WD) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 193.00 Td (  toggle.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 173.00 Td (- Reads active auton slot file and runs GPS or BASIC plan from SD during) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 157.00 Td (  autonomous.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 137.00 Td (- Reads optional `controller_mapping.txt` to remap actions to controller) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 121.00 Td (  buttons.) Tj ET
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 101.00 Td (Slot 2 - Auton Planner) Tj ET
+endstream
+endobj
+13 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 12 0 R >>
+endobj
+14 0 obj
+<< /Length 3522 >>
+stream
+0.030 0.070 0.150 rg 0 0 612 792 re f
+0.040 0.300 0.560 rg 0 726 612 66 re f
+0.080 0.780 0.500 rg 0 720 612 6 re f
+BT /F2 20 Tf 0.920 0.980 1.000 rg 52.00 752.00 Td (343B Ultimate Manual) Tj ET
+BT /F1 11 Tf 0.740 0.870 0.950 rg 52.00 734.00 Td (Bonkers + Tahera operating guide for drivers, developers, and release owners) Tj ET
+BT /F2 13 Tf 0.800 0.950 0.920 rg 52.00 710.00 Td (Program Matrix) Tj ET
+BT /F3 10 Tf 0.620 0.840 0.800 rg 52.00 30.00 Td (Page 4) Tj ET
+BT /F3 10 Tf 0.620 0.840 0.800 rg 370.00 30.00 Td (343B Robotics - Tahera Guide) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 688.00 Td (- On-brain touch UI to create/edit steps and save to three selectable auton) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 672.00 Td (  slots.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 652.00 Td (- Can record tank drive motions while driving and convert them into TANK_MS) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 636.00 Td (  steps.) Tj ET
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 616.00 Td (Slot 3 - Image Selector) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 594.00 Td (- Lets users browse BMP images on microSD and assign SPLASH/AUTON/DRIVER) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 578.00 Td (  images.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 558.00 Td (- Writes `ui_images.txt` used by The Tahera Sequence for runtime visuals.) Tj ET
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 538.00 Td (Slot 4 - Basic Bonkers) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 516.00 Td (- Records every controller axis sample and button press events to SD log files.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 496.00 Td (- Shows recent button entries on-screen and stops when touch SAVE is pressed.) Tj ET
+BT /F2 22 Tf 0.860 1.000 0.950 rg 52.00 468.00 Td (Driver Controls Quick Reference) Tj ET
+0.080 0.780 0.500 rg 52.00 459.00 300 2 re f
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 436.00 Td (The Tahera Sequence default mapping) Tj ET
+0.070 0.120 0.200 rg 52.00 324.00 508.00 96.00 re f
+0.080 0.780 0.500 RG 1.0 w 52.00 324.00 508.00 96.00 re S
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 404.00 Td (Drive \(tank\): ANALOG_LEFT_Y -> left side, ANALOG_RIGHT_Y -> right side) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 391.00 Td (D-pad override: UP/DOWN/LEFT/RIGHT) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 378.00 Td (GPS drive toggle: A = enable, B = disable) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 365.00 Td (6-wheel toggle: Y = on, X = off) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 352.00 Td (Intake control: L1 = intake in, L2 = intake out) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 339.00 Td (Outake control: R1 = outake out, R2 = outake in) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 314.00 Td (- D-pad commands override sticks when any D-pad direction is pressed.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 294.00 Td (- With GPS drive enabled, D-pad headings hold cardinal targets \(0/90/180/270\).) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 274.00 Td (- With GPS drive disabled, D-pad behaves as direct fixed-speed drive/turn) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 258.00 Td (  commands.) Tj ET
+0.080 0.180 0.200 rg 52.00 198.00 508.00 46.00 re f
+0.150 0.750 0.700 RG 1.2 w 52.00 198.00 508.00 46.00 re S
+BT /F1 11 Tf 0.830 0.960 0.920 rg 62.00 226.00 Td (Controller mapping can be customized from the Tahera desktop app and saved to repo) Tj ET
+BT /F1 11 Tf 0.830 0.960 0.920 rg 62.00 212.00 Td (or SD. The brain loads that mapping file at initialize.) Tj ET
+endstream
+endobj
+15 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 14 0 R >>
+endobj
+16 0 obj
+<< /Length 3961 >>
+stream
+0.030 0.070 0.150 rg 0 0 612 792 re f
+0.040 0.300 0.560 rg 0 726 612 66 re f
+0.080 0.780 0.500 rg 0 720 612 6 re f
+BT /F2 20 Tf 0.920 0.980 1.000 rg 52.00 752.00 Td (343B Ultimate Manual) Tj ET
+BT /F1 11 Tf 0.740 0.870 0.950 rg 52.00 734.00 Td (Bonkers + Tahera operating guide for drivers, developers, and release owners) Tj ET
+BT /F2 13 Tf 0.800 0.950 0.920 rg 52.00 710.00 Td (The Tahera Sequence) Tj ET
+BT /F3 10 Tf 0.620 0.840 0.800 rg 52.00 30.00 Td (Page 5) Tj ET
+BT /F3 10 Tf 0.620 0.840 0.800 rg 370.00 30.00 Td (343B Robotics - Tahera Guide) Tj ET
+BT /F2 22 Tf 0.860 1.000 0.950 rg 52.00 688.00 Td (The Tahera Sequence - Full Guide) Tj ET
+0.080 0.780 0.500 rg 52.00 679.00 300 2 re f
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 656.00 Td (Drive behavior) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 634.00 Td (- Outer motors are grouped and middle motors are controlled separately for 6WD) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 618.00 Td (  toggling.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 598.00 Td (- If 6WD is disabled, middle motors brake while outer motors continue running.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 578.00 Td (- Intake and outake are independent motors on ports 7 and 8.) Tj ET
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 558.00 Td (On-brain touch UI) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 536.00 Td (- Buttons on screen: GPS, BASIC, and RUN.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 516.00 Td (- SLOT indicator reflects active slot from `auton_slot.txt` \(1 to 3\).) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 496.00 Td (- Tap RUN to execute selected autonomous path when in operator control.) Tj ET
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 476.00 Td (Files read by The Tahera Sequence) Tj ET
+0.070 0.120 0.200 rg 52.00 364.00 508.00 96.00 re f
+0.080 0.780 0.500 RG 1.0 w 52.00 364.00 508.00 96.00 re S
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 444.00 Td (auton_slot.txt                # active slot number) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 431.00 Td (auton_plans_slot1.txt         # slot 1 plan) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 418.00 Td (auton_plans_slot2.txt         # slot 2 plan) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 405.00 Td (auton_plans_slot3.txt         # slot 3 plan) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 392.00 Td (controller_mapping.txt        # optional custom mapping) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 379.00 Td (ui_images.txt                # splash/auton/driver image selection) Tj ET
+BT /F2 22 Tf 0.860 1.000 0.950 rg 52.00 346.00 Td (Auton Planner - Full Guide) Tj ET
+0.080 0.780 0.500 rg 52.00 337.00 300 2 re f
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 314.00 Td (What it does) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 292.00 Td (- Edits GPS and BASIC autonomous plans from touch UI.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 272.00 Td (- Saves and loads three slot files on SD card.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 252.00 Td (- Records live tank inputs into TANK_MS steps at fixed sample intervals.) Tj ET
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 232.00 Td (Touch controls) Tj ET
+0.070 0.120 0.200 rg 52.00 146.00 508.00 70.00 re f
+0.080 0.780 0.500 RG 1.0 w 52.00 146.00 508.00 70.00 re S
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 200.00 Td (Top row: GPS | BASIC | SAVE | S1 | S2 | S3) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 187.00 Td (Step nav: PREV | NEXT) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 174.00 Td (Step edit: TYPE, V1-, V1+, V2-, V2+, V3-, V3+) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 161.00 Td (Record controls: REC/STOP and CLEAR) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 136.00 Td (- SAVE writes both [GPS] and [BASIC] sections to the currently selected slot) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 120.00 Td (  file.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 100.00 Td (- S1/S2/S3 selects active storage slot and updates `auton_slot.txt`.) Tj ET
+endstream
+endobj
+17 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 16 0 R >>
+endobj
+18 0 obj
+<< /Length 3750 >>
+stream
+0.030 0.070 0.150 rg 0 0 612 792 re f
+0.040 0.300 0.560 rg 0 726 612 66 re f
+0.080 0.780 0.500 rg 0 720 612 6 re f
+BT /F2 20 Tf 0.920 0.980 1.000 rg 52.00 752.00 Td (343B Ultimate Manual) Tj ET
+BT /F1 11 Tf 0.740 0.870 0.950 rg 52.00 734.00 Td (Bonkers + Tahera operating guide for drivers, developers, and release owners) Tj ET
+BT /F2 13 Tf 0.800 0.950 0.920 rg 52.00 710.00 Td (Auton Planner) Tj ET
+BT /F3 10 Tf 0.620 0.840 0.800 rg 52.00 30.00 Td (Page 6) Tj ET
+BT /F3 10 Tf 0.620 0.840 0.800 rg 370.00 30.00 Td (343B Robotics - Tahera Guide) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 688.00 Td (- REC starts recording current drive mode \(GPS or BASIC\) into plan steps.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 668.00 Td (- CLEAR resets the active plan list to EMPTY steps.) Tj ET
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 648.00 Td (Driver controls in Auton Planner opcontrol) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 626.00 Td (- Tank drive uses left and right Y axes.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 606.00 Td (- L1/L2 control left intake motor; R1/R2 control right intake motor.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 586.00 Td (- A forces GPS mode; B forces BASIC mode.) Tj ET
+BT /F2 22 Tf 0.860 1.000 0.950 rg 52.00 558.00 Td (Auton Step Types and File Format) Tj ET
+0.080 0.780 0.500 rg 52.00 549.00 300 2 re f
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 526.00 Td (- Supported step types: EMPTY, DRIVE_MS, TANK_MS, TURN_HEADING, WAIT_MS,) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 510.00 Td (  INTAKE_ON, INTAKE_OFF, OUTTAKE_ON, OUTTAKE_OFF.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 490.00 Td (- Each row stores type and up to three numeric values.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 470.00 Td (- Plans are grouped into [GPS] and [BASIC] sections.) Tj ET
+0.070 0.120 0.200 rg 52.00 321.00 508.00 135.00 re f
+0.080 0.780 0.500 RG 1.0 w 52.00 321.00 508.00 135.00 re S
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 440.00 Td ([GPS]) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 427.00 Td (DRIVE_MS,60,1200,0) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 414.00 Td (TURN_HEADING,90,0,0) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 401.00 Td (WAIT_MS,250,0,0) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 388.00 Td () Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 375.00 Td ([BASIC]) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 362.00 Td (TANK_MS,50,50,1000) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 349.00 Td (OUTTAKE_ON,0,0,0) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 336.00 Td (OUTTAKE_OFF,0,0,0) Tj ET
+0.080 0.180 0.200 rg 52.00 271.00 508.00 46.00 re f
+0.150 0.750 0.700 RG 1.2 w 52.00 271.00 508.00 46.00 re S
+BT /F1 11 Tf 0.830 0.960 0.920 rg 62.00 299.00 Td (Tahera Sequence and Auton Planner must agree on this format. If custom scripts) Tj ET
+BT /F1 11 Tf 0.830 0.960 0.920 rg 62.00 285.00 Td (modify files, keep section names and CSV field counts intact.) Tj ET
+BT /F2 22 Tf 0.860 1.000 0.950 rg 52.00 253.00 Td (Image Selector - Full Guide) Tj ET
+0.080 0.780 0.500 rg 52.00 244.00 300 2 re f
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 221.00 Td (- Scans `/usd/Images` for BMP files and presents a touch UI browser.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 201.00 Td (- PREV/NEXT cycles through available BMP assets.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 181.00 Td (- SPLASH, AUTON, and DRIVER assign current image to each role.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 161.00 Td (- SAVE writes selections to `ui_images.txt`.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 141.00 Td (- REFRESH rescans SD card in case files were added/removed.) Tj ET
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 121.00 Td (Config file written by Image Selector) Tj ET
+endstream
+endobj
+19 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 18 0 R >>
+endobj
+20 0 obj
+<< /Length 3511 >>
+stream
+0.030 0.070 0.150 rg 0 0 612 792 re f
+0.040 0.300 0.560 rg 0 726 612 66 re f
+0.080 0.780 0.500 rg 0 720 612 6 re f
+BT /F2 20 Tf 0.920 0.980 1.000 rg 52.00 752.00 Td (343B Ultimate Manual) Tj ET
+BT /F1 11 Tf 0.740 0.870 0.950 rg 52.00 734.00 Td (Bonkers + Tahera operating guide for drivers, developers, and release owners) Tj ET
+BT /F2 13 Tf 0.800 0.950 0.920 rg 52.00 710.00 Td (Image Selector) Tj ET
+BT /F3 10 Tf 0.620 0.840 0.800 rg 52.00 30.00 Td (Page 7) Tj ET
+BT /F3 10 Tf 0.620 0.840 0.800 rg 370.00 30.00 Td (343B Robotics - Tahera Guide) Tj ET
+0.070 0.120 0.200 rg 52.00 624.00 508.00 70.00 re f
+0.080 0.780 0.500 RG 1.0 w 52.00 624.00 508.00 70.00 re S
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 678.00 Td (SPLASH=/usd/Images/loading_icon.bmp) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 665.00 Td (AUTON=/usd/Images/jerkbot.bmp) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 652.00 Td (DRIVER=/usd/Images/driver.bmp) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 639.00 Td (RUN=/usd/Images/jerkbot.bmp) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 614.00 Td (- Use 24-bit or 32-bit BMPs; avoid PNG/JPEG on brain runtime screens.) Tj ET
+BT /F2 22 Tf 0.860 1.000 0.950 rg 52.00 586.00 Td (Basic Bonkers - Logger Guide) Tj ET
+0.080 0.780 0.500 rg 52.00 577.00 300 2 re f
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 554.00 Td (What is recorded) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 532.00 Td (- Every loop sample logs AXIS1, AXIS2, AXIS3, AXIS4 values.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 512.00 Td (- Button press transitions log entries in format `TYPE : ACTION`.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 492.00 Td (- File path format: `/usd/bonkers_log_<millis>.txt`.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 472.00 Td (- A touch press logs `SCREEN_TAP : SAVE` and ends recording.) Tj ET
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 452.00 Td (On-brain display behavior) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 430.00 Td (- Shows logger status and output path while recording.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 410.00 Td (- Displays recent button events and stops adding once history area is full.) Tj ET
+0.070 0.120 0.200 rg 52.00 287.00 508.00 109.00 re f
+0.080 0.780 0.500 RG 1.0 w 52.00 287.00 508.00 109.00 re S
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 380.00 Td (AXIS1 : 0) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 367.00 Td (AXIS2 : -54) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 354.00 Td (AXIS3 : 62) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 341.00 Td (AXIS4 : 0) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 328.00 Td (BTN_L1 : INTAKE_IN) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 315.00 Td (BTN_R1 : OUTTAKE_OUT) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 302.00 Td (SCREEN_TAP : SAVE) Tj ET
+BT /F2 22 Tf 0.860 1.000 0.950 rg 52.00 269.00 Td (Field Replay on Mac and Windows) Tj ET
+0.080 0.780 0.500 rg 52.00 260.00 300 2 re f
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 237.00 Td (- Purpose: replay Bonkers logs as movement lines over the digital field image.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 217.00 Td (- Open a `bonkers_log_*.txt` file from SD or copied local folder.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 197.00 Td (- Use play controls to inspect path and directional behavior across the run.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 177.00 Td (- Replay uses joystick axis interpretation for approximate path visualization.) Tj ET
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 157.00 Td (Workflow) Tj ET
+endstream
+endobj
+21 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 20 0 R >>
+endobj
+22 0 obj
+<< /Length 3905 >>
+stream
+0.030 0.070 0.150 rg 0 0 612 792 re f
+0.040 0.300 0.560 rg 0 726 612 66 re f
+0.080 0.780 0.500 rg 0 720 612 6 re f
+BT /F2 20 Tf 0.920 0.980 1.000 rg 52.00 752.00 Td (343B Ultimate Manual) Tj ET
+BT /F1 11 Tf 0.740 0.870 0.950 rg 52.00 734.00 Td (Bonkers + Tahera operating guide for drivers, developers, and release owners) Tj ET
+BT /F2 13 Tf 0.800 0.950 0.920 rg 52.00 710.00 Td (Field Replay) Tj ET
+BT /F3 10 Tf 0.620 0.840 0.800 rg 52.00 30.00 Td (Page 8) Tj ET
+BT /F3 10 Tf 0.620 0.840 0.800 rg 370.00 30.00 Td (343B Robotics - Tahera Guide) Tj ET
+0.070 0.120 0.200 rg 52.00 611.00 508.00 83.00 re f
+0.080 0.780 0.500 RG 1.0 w 52.00 611.00 508.00 83.00 re S
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 678.00 Td (1\) Record a run in Basic Bonkers and tap SAVE.) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 665.00 Td (2\) Move log file from microSD to computer if needed.) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 652.00 Td (3\) Open Tahera -> Field Replay -> Open File.) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 639.00 Td (4\) Select log and run replay.) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 626.00 Td (5\) Compare path against expected route and adjust code/plans.) Tj ET
+BT /F2 22 Tf 0.860 1.000 0.950 rg 52.00 593.00 Td (SD Card Workflow) Tj ET
+0.080 0.780 0.500 rg 52.00 584.00 300 2 re f
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 561.00 Td (- Mount path used by Tahera on macOS: `/Volumes/MICROBONK`.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 541.00 Td (- Store runtime images in `/usd/Images` on the card.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 521.00 Td (- Keep plan files and mapping files at SD root for automatic detection.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 501.00 Td (- Use BMP format for brain-rendered images; remove duplicate non-BMP versions.) Tj ET
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 481.00 Td (Core SD files) Tj ET
+0.070 0.120 0.200 rg 52.00 343.00 508.00 122.00 re f
+0.080 0.780 0.500 RG 1.0 w 52.00 343.00 508.00 122.00 re S
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 449.00 Td (auton_slot.txt) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 436.00 Td (auton_plans_slot1.txt) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 423.00 Td (auton_plans_slot2.txt) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 410.00 Td (auton_plans_slot3.txt) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 397.00 Td (controller_mapping.txt) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 384.00 Td (ui_images.txt) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 371.00 Td (bonkers_log_*.txt) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 358.00 Td (Images/*.bmp) Tj ET
+BT /F2 22 Tf 0.860 1.000 0.950 rg 52.00 325.00 Td (Port Map and Wiring) Tj ET
+0.080 0.780 0.500 rg 52.00 316.00 300 2 re f
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 293.00 Td (The Tahera Sequence and Auton Planner) Tj ET
+0.070 0.120 0.200 rg 52.00 155.00 508.00 122.00 re f
+0.080 0.780 0.500 RG 1.0 w 52.00 155.00 508.00 122.00 re S
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 261.00 Td (Left outer drive: 1\(reversed\), 3\(reversed\)) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 248.00 Td (Left middle drive: 2) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 235.00 Td (Right outer drive: 4, 6) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 222.00 Td (Right middle drive: 5\(reversed\)) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 209.00 Td (Intake motor: 7) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 196.00 Td (Outake motor: 8) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 183.00 Td (GPS: 10) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 170.00 Td (IMU: 11) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 145.00 Td (- If wiring changes, update both PROS code and Tahera Port Map section) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 129.00 Td (  together.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 109.00 Td (- Reversed signs in code \(`-port`\) matter for correct drive direction.) Tj ET
+endstream
+endobj
+23 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 22 0 R >>
+endobj
+24 0 obj
+<< /Length 3626 >>
+stream
+0.030 0.070 0.150 rg 0 0 612 792 re f
+0.040 0.300 0.560 rg 0 726 612 66 re f
+0.080 0.780 0.500 rg 0 720 612 6 re f
+BT /F2 20 Tf 0.920 0.980 1.000 rg 52.00 752.00 Td (343B Ultimate Manual) Tj ET
+BT /F1 11 Tf 0.740 0.870 0.950 rg 52.00 734.00 Td (Bonkers + Tahera operating guide for drivers, developers, and release owners) Tj ET
+BT /F2 13 Tf 0.800 0.950 0.920 rg 52.00 710.00 Td (Port Map) Tj ET
+BT /F3 10 Tf 0.620 0.840 0.800 rg 52.00 30.00 Td (Page 9) Tj ET
+BT /F3 10 Tf 0.620 0.840 0.800 rg 370.00 30.00 Td (343B Robotics - Tahera Guide) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 688.00 Td (- After rewiring, run a low-speed direction test before full drive.) Tj ET
+BT /F2 22 Tf 0.860 1.000 0.950 rg 52.00 660.00 Td (Controller Mapping Customization) Tj ET
+0.080 0.780 0.500 rg 52.00 651.00 300 2 re f
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 628.00 Td (- Tahera app section allows action-to-button remapping.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 608.00 Td (- Save mapping to repository file and/or SD card file.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 588.00 Td (- Brain loads mapping on initialize from `controller_mapping.txt`.) Tj ET
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 568.00 Td (Supported actions) Tj ET
+0.070 0.120 0.200 rg 52.00 430.00 508.00 122.00 re f
+0.080 0.780 0.500 RG 1.0 w 52.00 430.00 508.00 122.00 re S
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 536.00 Td (INTAKE_IN) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 523.00 Td (INTAKE_OUT) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 510.00 Td (OUTAKE_OUT) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 497.00 Td (OUTAKE_IN) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 484.00 Td (GPS_ENABLE) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 471.00 Td (GPS_DISABLE) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 458.00 Td (SIX_WHEEL_ON) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 445.00 Td (SIX_WHEEL_OFF) Tj ET
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 420.00 Td (Example mapping file) Tj ET
+0.070 0.120 0.200 rg 52.00 256.00 508.00 148.00 re f
+0.080 0.780 0.500 RG 1.0 w 52.00 256.00 508.00 148.00 re S
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 388.00 Td (# Tahera controller mapping) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 375.00 Td (# Format: ACTION=BUTTON) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 362.00 Td (INTAKE_IN=L1) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 349.00 Td (INTAKE_OUT=L2) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 336.00 Td (OUTAKE_OUT=R1) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 323.00 Td (OUTAKE_IN=R2) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 310.00 Td (GPS_ENABLE=A) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 297.00 Td (GPS_DISABLE=B) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 284.00 Td (SIX_WHEEL_ON=Y) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 271.00 Td (SIX_WHEEL_OFF=X) Tj ET
+BT /F2 22 Tf 0.860 1.000 0.950 rg 52.00 238.00 Td (Build and Upload from Tahera App) Tj ET
+0.080 0.780 0.500 rg 52.00 229.00 300 2 re f
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 206.00 Td (- Open Tahera and go to Build & Upload section.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 186.00 Td (- Choose target project and verify slot number.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 166.00 Td (- Use auto brain detection and verify connected port.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 146.00 Td (- Run build/upload action and monitor output log for completion.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 126.00 Td (- Repeat for each project when doing full brain refresh.) Tj ET
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 106.00 Td (Recommended full upload order) Tj ET
+endstream
+endobj
+25 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 24 0 R >>
+endobj
+26 0 obj
+<< /Length 3684 >>
+stream
+0.030 0.070 0.150 rg 0 0 612 792 re f
+0.040 0.300 0.560 rg 0 726 612 66 re f
+0.080 0.780 0.500 rg 0 720 612 6 re f
+BT /F2 20 Tf 0.920 0.980 1.000 rg 52.00 752.00 Td (343B Ultimate Manual) Tj ET
+BT /F1 11 Tf 0.740 0.870 0.950 rg 52.00 734.00 Td (Bonkers + Tahera operating guide for drivers, developers, and release owners) Tj ET
+BT /F2 13 Tf 0.800 0.950 0.920 rg 52.00 710.00 Td (Build and Upload) Tj ET
+BT /F3 10 Tf 0.620 0.840 0.800 rg 52.00 30.00 Td (Page 10) Tj ET
+BT /F3 10 Tf 0.620 0.840 0.800 rg 370.00 30.00 Td (343B Robotics - Tahera Guide) Tj ET
+0.070 0.120 0.200 rg 52.00 624.00 508.00 70.00 re f
+0.080 0.780 0.500 RG 1.0 w 52.00 624.00 508.00 70.00 re S
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 678.00 Td (1\) The Tahera Sequence -> slot 1) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 665.00 Td (2\) Auton Planner      -> slot 2) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 652.00 Td (3\) Image Selector     -> slot 3) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 639.00 Td (4\) Basic Bonkers      -> slot 4) Tj ET
+BT /F2 22 Tf 0.860 1.000 0.950 rg 52.00 606.00 Td (Build and Upload from PROS CLI) Tj ET
+0.080 0.780 0.500 rg 52.00 597.00 300 2 re f
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 574.00 Td (Use CLI when GUI is unavailable or when scripting uploads in a terminal) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 558.00 Td (workflow.) Tj ET
+0.070 0.120 0.200 rg 52.00 470.00 508.00 70.00 re f
+0.080 0.780 0.500 RG 1.0 w 52.00 470.00 508.00 70.00 re S
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 524.00 Td (cd 'Pros projects/Tahera_Project' && pros make && pros upload --slot 1) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 511.00 Td (cd 'Pros projects/Auton_Planner_PROS' && pros make && pros upload --slot 2) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 498.00 Td (cd 'Pros projects/Jerkbot_Image_Test' && pros make && pros upload --slot 3) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 485.00 Td (cd 'Pros projects/Basic_Bonkers_PROS' && pros make && pros upload --slot 4) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 460.00 Td (- If multiple brains are attached, choose the intended device at upload prompt.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 440.00 Td (- Keep microSD inserted for programs that read/write files.) Tj ET
+BT /F2 22 Tf 0.860 1.000 0.950 rg 52.00 412.00 Td (Tahera Desktop Apps) Tj ET
+0.080 0.780 0.500 rg 52.00 403.00 300 2 re f
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 380.00 Td (macOS) Tj ET
+0.070 0.120 0.200 rg 52.00 307.00 508.00 57.00 re f
+0.080 0.780 0.500 RG 1.0 w 52.00 307.00 508.00 57.00 re S
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 348.00 Td (cd 'Mac Aplications/Tahera') Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 335.00 Td (./build_app.sh) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 322.00 Td (# output: Mac Aplications/Tahera/build/Tahera.app) Tj ET
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 297.00 Td (Windows) Tj ET
+0.070 0.120 0.200 rg 52.00 224.00 508.00 57.00 re f
+0.080 0.780 0.500 RG 1.0 w 52.00 224.00 508.00 57.00 re S
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 265.00 Td (cd 'Windows Port/TaheraWin') Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 252.00 Td (powershell -ExecutionPolicy Bypass -File build_windows.ps1) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 239.00 Td (# output: Windows Port/TaheraWin/build/Tahera.exe) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 214.00 Td (- Both apps include sections for build/upload, port map, controller mapping,) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 198.00 Td (  replay, SD, README, and repository settings.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 178.00 Td (- Repository Settings section is protected by password in-app: 56Wrenches.782) Tj ET
+endstream
+endobj
+27 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 26 0 R >>
+endobj
+28 0 obj
+<< /Length 3868 >>
+stream
+0.030 0.070 0.150 rg 0 0 612 792 re f
+0.040 0.300 0.560 rg 0 726 612 66 re f
+0.080 0.780 0.500 rg 0 720 612 6 re f
+BT /F2 20 Tf 0.920 0.980 1.000 rg 52.00 752.00 Td (343B Ultimate Manual) Tj ET
+BT /F1 11 Tf 0.740 0.870 0.950 rg 52.00 734.00 Td (Bonkers + Tahera operating guide for drivers, developers, and release owners) Tj ET
+BT /F2 13 Tf 0.800 0.950 0.920 rg 52.00 710.00 Td (Git and Release) Tj ET
+BT /F3 10 Tf 0.620 0.840 0.800 rg 52.00 30.00 Td (Page 11) Tj ET
+BT /F3 10 Tf 0.620 0.840 0.800 rg 370.00 30.00 Td (343B Robotics - Tahera Guide) Tj ET
+BT /F2 22 Tf 0.860 1.000 0.950 rg 52.00 688.00 Td (Git Commit, Tag, and Release) Tj ET
+0.080 0.780 0.500 rg 52.00 679.00 300 2 re f
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 656.00 Td (- Use Tahera Repository Settings section to run commit/push/tag/release) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 640.00 Td (  operations.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 620.00 Td (- Release log should show each phase and final success/failure message.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 600.00 Td (- If release fails, address authentication or CLI path issues before retry.) Tj ET
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 580.00 Td (Authentication check) Tj ET
+0.070 0.120 0.200 rg 52.00 507.00 508.00 57.00 re f
+0.080 0.780 0.500 RG 1.0 w 52.00 507.00 508.00 57.00 re S
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 548.00 Td (gh auth status) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 535.00 Td (gh auth login) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 522.00 Td (gh release list) Tj ET
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 497.00 Td (Command-line fallback release) Tj ET
+0.070 0.120 0.200 rg 52.00 385.00 508.00 96.00 re f
+0.080 0.780 0.500 RG 1.0 w 52.00 385.00 508.00 96.00 re S
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 465.00 Td (git add -A) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 452.00 Td (git commit -m 'release prep') Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 439.00 Td (git push origin main) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 426.00 Td (git tag -a 2.0 -m 'Release 2.0') Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 413.00 Td (git push origin 2.0) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 400.00 Td (gh release create 2.0 --title '2.0' --notes 'Release notes') Tj ET
+BT /F2 22 Tf 0.860 1.000 0.950 rg 52.00 367.00 Td (Troubleshooting Guide) Tj ET
+0.080 0.780 0.500 rg 52.00 358.00 300 2 re f
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 335.00 Td (Brain and upload issues) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 313.00 Td (- Brain not detected: reconnect USB, power cycle brain, re-run detection.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 293.00 Td (- Upload fails: verify project compiles with `pros make` first.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 273.00 Td (- Wrong slot behavior: check upload command used correct `--slot` value.) Tj ET
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 253.00 Td (SD and file issues) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 231.00 Td (- No logs or plans: confirm SD inserted and writable.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 211.00 Td (- Images not drawing: ensure `.bmp` format and valid path under `/usd/Images`.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 191.00 Td (- Slot not switching: verify `auton_slot.txt` contains 1, 2, or 3 only.) Tj ET
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 171.00 Td (Release issues) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 149.00 Td (- `gh: No such file or directory`: install GitHub CLI and restart app.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 129.00 Td (- `not authenticated`: run `gh auth login` and verify with `gh auth status`.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 109.00 Td (- Infinite loading: rely on release log; enforce command timeout and retry) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 93.00 Td (  after fix.) Tj ET
+endstream
+endobj
+29 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 28 0 R >>
+endobj
+30 0 obj
+<< /Length 3947 >>
+stream
+0.030 0.070 0.150 rg 0 0 612 792 re f
+0.040 0.300 0.560 rg 0 726 612 66 re f
+0.080 0.780 0.500 rg 0 720 612 6 re f
+BT /F2 20 Tf 0.920 0.980 1.000 rg 52.00 752.00 Td (343B Ultimate Manual) Tj ET
+BT /F1 11 Tf 0.740 0.870 0.950 rg 52.00 734.00 Td (Bonkers + Tahera operating guide for drivers, developers, and release owners) Tj ET
+BT /F2 13 Tf 0.800 0.950 0.920 rg 52.00 710.00 Td (Troubleshooting) Tj ET
+BT /F3 10 Tf 0.620 0.840 0.800 rg 52.00 30.00 Td (Page 12) Tj ET
+BT /F3 10 Tf 0.620 0.840 0.800 rg 370.00 30.00 Td (343B Robotics - Tahera Guide) Tj ET
+0.080 0.180 0.200 rg 52.00 648.00 508.00 46.00 re f
+0.150 0.750 0.700 RG 1.2 w 52.00 648.00 508.00 46.00 re S
+BT /F1 11 Tf 0.830 0.960 0.920 rg 62.00 676.00 Td (When debugging anything critical, isolate one subsystem at a time: wiring -> brain) Tj ET
+BT /F1 11 Tf 0.830 0.960 0.920 rg 62.00 662.00 Td (upload -> SD file presence -> controller behavior -> desktop integration.) Tj ET
+BT /F2 22 Tf 0.860 1.000 0.950 rg 52.00 630.00 Td (Autonomous Tuning Workflow) Tj ET
+0.080 0.780 0.500 rg 52.00 621.00 300 2 re f
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 598.00 Td (- Use Auton Planner to create a baseline plan in the correct slot.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 578.00 Td (- Run autonomous from The Tahera Sequence with that same selected slot.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 558.00 Td (- Record a Basic Bonkers log during driver validation runs.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 538.00 Td (- Replay the path in Tahera Field Replay and compare against expected field) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 522.00 Td (  path.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 502.00 Td (- Adjust TURN_HEADING and DRIVE/TANK durations incrementally, then save and) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 486.00 Td (  retest.) Tj ET
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 466.00 Td (Tuning loop) Tj ET
+0.070 0.120 0.200 rg 52.00 367.00 508.00 83.00 re f
+0.080 0.780 0.500 RG 1.0 w 52.00 367.00 508.00 83.00 re S
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 434.00 Td (1\) Edit plan step values \(Auton Planner\)) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 421.00 Td (2\) SAVE to current slot) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 408.00 Td (3\) Run auton from Slot 1 \(The Tahera Sequence\)) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 395.00 Td (4\) Record and replay if movement is off) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 382.00 Td (5\) Repeat until route stability is acceptable) Tj ET
+BT /F2 22 Tf 0.860 1.000 0.950 rg 52.00 349.00 Td (Windows Operations and Portability) Tj ET
+0.080 0.780 0.500 rg 52.00 340.00 300 2 re f
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 317.00 Td (- Tahera Windows app is under `Windows Port/TaheraWin`.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 297.00 Td (- Build output is a runnable `Tahera.exe` in the `build` folder.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 277.00 Td (- Bonkers replay companion app is under `Windows Port/BonkersFieldReplayWin`.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 257.00 Td (- Keep assets, slot files, and mapping files identical between Mac and Windows) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 241.00 Td (  workflows.) Tj ET
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 221.00 Td (Windows build commands) Tj ET
+0.070 0.120 0.200 rg 52.00 109.00 508.00 96.00 re f
+0.080 0.780 0.500 RG 1.0 w 52.00 109.00 508.00 96.00 re S
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 189.00 Td (cd 'Windows Port/TaheraWin') Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 176.00 Td (build_windows.bat) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 163.00 Td (# or build_windows.ps1) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 150.00 Td () Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 137.00 Td (cd 'Windows Port/BonkersFieldReplayWin') Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 124.00 Td (powershell -ExecutionPolicy Bypass -File build_windows.ps1) Tj ET
+endstream
+endobj
+31 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 30 0 R >>
+endobj
+32 0 obj
+<< /Length 3517 >>
+stream
+0.030 0.070 0.150 rg 0 0 612 792 re f
+0.040 0.300 0.560 rg 0 726 612 66 re f
+0.080 0.780 0.500 rg 0 720 612 6 re f
+BT /F2 20 Tf 0.920 0.980 1.000 rg 52.00 752.00 Td (343B Ultimate Manual) Tj ET
+BT /F1 11 Tf 0.740 0.870 0.950 rg 52.00 734.00 Td (Bonkers + Tahera operating guide for drivers, developers, and release owners) Tj ET
+BT /F2 13 Tf 0.800 0.950 0.920 rg 52.00 710.00 Td (Developer Workflow) Tj ET
+BT /F3 10 Tf 0.620 0.840 0.800 rg 52.00 30.00 Td (Page 13) Tj ET
+BT /F3 10 Tf 0.620 0.840 0.800 rg 370.00 30.00 Td (343B Robotics - Tahera Guide) Tj ET
+BT /F2 22 Tf 0.860 1.000 0.950 rg 52.00 688.00 Td (Developer Workflow and Code Update Path) Tj ET
+0.080 0.780 0.500 rg 52.00 679.00 300 2 re f
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 656.00 Td (- Update PROS source first, then validate behavior on-brain.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 636.00 Td (- Reflect any port-map or control changes in both Tahera apps immediately.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 616.00 Td (- Rebuild Mac and Windows apps after UI or model changes.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 596.00 Td (- Run one upload cycle for each slot after major refactors.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 576.00 Td (- Commit with specific messages that describe the robot behavior change.) Tj ET
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 556.00 Td (Recommended change sequence) Tj ET
+0.070 0.120 0.200 rg 52.00 444.00 508.00 96.00 re f
+0.080 0.780 0.500 RG 1.0 w 52.00 444.00 508.00 96.00 re S
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 524.00 Td (1\) Edit PROS project code) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 511.00 Td (2\) Build + upload to test slot) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 498.00 Td (3\) Validate controls and auton behavior) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 485.00 Td (4\) Update Tahera app models/views if needed) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 472.00 Td (5\) Rebuild macOS and Windows Tahera apps) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 459.00 Td (6\) Commit, push, tag, release) Tj ET
+BT /F2 22 Tf 0.860 1.000 0.950 rg 52.00 426.00 Td (Backup and Recovery Procedures) Tj ET
+0.080 0.780 0.500 rg 52.00 417.00 300 2 re f
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 394.00 Td (- Store critical logs and slot files after every major test session.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 374.00 Td (- Keep a copy of working SD card files in a dated folder in the repo or) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 358.00 Td (  external backup.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 338.00 Td (- If files are deleted locally, restore by pulling from the last known good) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 322.00 Td (  commit.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 302.00 Td (- If slot behavior is wrong, reupload all four programs in slot order.) Tj ET
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 282.00 Td (Fast restore checklist) Tj ET
+0.070 0.120 0.200 rg 52.00 183.00 508.00 83.00 re f
+0.080 0.780 0.500 RG 1.0 w 52.00 183.00 508.00 83.00 re S
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 250.00 Td (git fetch origin) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 237.00 Td (git checkout <known-good-commit>) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 224.00 Td (# rebuild apps) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 211.00 Td (# reupload slots 1 through 4) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 198.00 Td (# restore SD files: auton_slot, slot plans, mapping, ui_images) Tj ET
+endstream
+endobj
+33 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 32 0 R >>
+endobj
+34 0 obj
+<< /Length 3322 >>
+stream
+0.030 0.070 0.150 rg 0 0 612 792 re f
+0.040 0.300 0.560 rg 0 726 612 66 re f
+0.080 0.780 0.500 rg 0 720 612 6 re f
+BT /F2 20 Tf 0.920 0.980 1.000 rg 52.00 752.00 Td (343B Ultimate Manual) Tj ET
+BT /F1 11 Tf 0.740 0.870 0.950 rg 52.00 734.00 Td (Bonkers + Tahera operating guide for drivers, developers, and release owners) Tj ET
+BT /F2 13 Tf 0.800 0.950 0.920 rg 52.00 710.00 Td (FAQ) Tj ET
+BT /F3 10 Tf 0.620 0.840 0.800 rg 52.00 30.00 Td (Page 14) Tj ET
+BT /F3 10 Tf 0.620 0.840 0.800 rg 370.00 30.00 Td (343B Robotics - Tahera Guide) Tj ET
+BT /F2 22 Tf 0.860 1.000 0.950 rg 52.00 688.00 Td (FAQ - Common Team Questions) Tj ET
+0.080 0.780 0.500 rg 52.00 679.00 300 2 re f
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 656.00 Td (- Q: Can I drive while Auton Planner records? A: Yes, REC captures tank samples) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 640.00 Td (  while driving in opcontrol.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 620.00 Td (- Q: Are Auton Planner ports the same as The Tahera Sequence? A: Yes, shared) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 604.00 Td (  drive and sensor assumptions are maintained.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 584.00 Td (- Q: Why is replay path not exact? A: Replay is axis-based approximation,) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 568.00 Td (  useful for relative path checks.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 548.00 Td (- Q: What if release does not appear on GitHub? A: Check gh auth, tag push, and) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 532.00 Td (  release log output.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 512.00 Td (- Q: Where do I change button mapping? A: Tahera app -> Controller Mapping) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 496.00 Td (  section, then save to repo/SD.) Tj ET
+BT /F2 22 Tf 0.860 1.000 0.950 rg 52.00 468.00 Td (Competition Day Checklist) Tj ET
+0.080 0.780 0.500 rg 52.00 459.00 300 2 re f
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 436.00 Td (Pre-match) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 414.00 Td (- Verify slot assignments \(1 Tahera Sequence, 2 Auton Planner, 3 Image) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 398.00 Td (  Selector, 4 Basic Bonkers\).) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 378.00 Td (- Run a short drivetrain direction test and intake/outake test.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 358.00 Td (- Confirm active auton slot and expected path data on SD.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 338.00 Td (- Confirm controller mapping file is correct for current drivers.) Tj ET
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 318.00 Td (During testing rounds) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 296.00 Td (- Record one Bonkers log for each major tuning change.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 276.00 Td (- Replay each log in Tahera Field Replay before locking match strategy.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 256.00 Td (- If autonomous drifts, adjust plan values and resave via Auton Planner.) Tj ET
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 236.00 Td (Post-match) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 214.00 Td (- Archive new logs and plans in dated folders.) Tj ET
+BT /F1 12 Tf 0.920 0.980 1.000 rg 52.00 194.00 Td (- Commit high-value changes and tag stable states.) Tj ET
+endstream
+endobj
+35 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 34 0 R >>
+endobj
+36 0 obj
+<< /Length 3948 >>
+stream
+0.030 0.070 0.150 rg 0 0 612 792 re f
+0.040 0.300 0.560 rg 0 726 612 66 re f
+0.080 0.780 0.500 rg 0 720 612 6 re f
+BT /F2 20 Tf 0.920 0.980 1.000 rg 52.00 752.00 Td (343B Ultimate Manual) Tj ET
+BT /F1 11 Tf 0.740 0.870 0.950 rg 52.00 734.00 Td (Bonkers + Tahera operating guide for drivers, developers, and release owners) Tj ET
+BT /F2 13 Tf 0.800 0.950 0.920 rg 52.00 710.00 Td (Appendix A) Tj ET
+BT /F3 10 Tf 0.620 0.840 0.800 rg 52.00 30.00 Td (Page 15) Tj ET
+BT /F3 10 Tf 0.620 0.840 0.800 rg 370.00 30.00 Td (343B Robotics - Tahera Guide) Tj ET
+BT /F2 22 Tf 0.860 1.000 0.950 rg 52.00 688.00 Td (Appendix A - File Examples) Tj ET
+0.080 0.780 0.500 rg 52.00 679.00 300 2 re f
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 656.00 Td (auton_slot.txt) Tj ET
+0.070 0.120 0.200 rg 52.00 609.00 508.00 31.00 re f
+0.080 0.780 0.500 RG 1.0 w 52.00 609.00 508.00 31.00 re S
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 624.00 Td (2) Tj ET
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 599.00 Td (auton_plans_slot2.txt) Tj ET
+0.070 0.120 0.200 rg 52.00 448.00 508.00 135.00 re f
+0.080 0.780 0.500 RG 1.0 w 52.00 448.00 508.00 135.00 re S
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 567.00 Td ([GPS]) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 554.00 Td (DRIVE_MS,70,900,0) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 541.00 Td (TURN_HEADING,90,0,0) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 528.00 Td (DRIVE_MS,55,600,0) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 515.00 Td () Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 502.00 Td ([BASIC]) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 489.00 Td (TANK_MS,70,70,900) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 476.00 Td (TANK_MS,-40,40,350) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 463.00 Td (WAIT_MS,250,0,0) Tj ET
+BT /F2 15 Tf 0.780 0.950 0.900 rg 52.00 438.00 Td (ui_images.txt) Tj ET
+0.070 0.120 0.200 rg 52.00 352.00 508.00 70.00 re f
+0.080 0.780 0.500 RG 1.0 w 52.00 352.00 508.00 70.00 re S
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 406.00 Td (SPLASH=/usd/Images/loading_icon.bmp) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 393.00 Td (AUTON=/usd/Images/jerkbot.bmp) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 380.00 Td (DRIVER=/usd/Images/driver_overlay.bmp) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 367.00 Td (RUN=/usd/Images/jerkbot.bmp) Tj ET
+BT /F2 22 Tf 0.860 1.000 0.950 rg 52.00 334.00 Td (Appendix B - Fast Path Reference) Tj ET
+0.080 0.780 0.500 rg 52.00 325.00 300 2 re f
+0.070 0.120 0.200 rg 52.00 173.00 508.00 135.00 re f
+0.080 0.780 0.500 RG 1.0 w 52.00 173.00 508.00 135.00 re S
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 292.00 Td (Top-level readme: README.md) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 279.00 Td (Tahera PROS code: Pros projects/Tahera_Project/src/main.cpp) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 266.00 Td (Auton Planner code: Pros projects/Auton_Planner_PROS/src/main.cpp) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 253.00 Td (Image Selector code: Pros projects/Jerkbot_Image_Test/src/main.cpp) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 240.00 Td (Basic Bonkers code: Pros projects/Basic_Bonkers_PROS/src/main.cpp) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 227.00 Td (Mac app model: Mac Aplications/Tahera/Sources/Tahera/Models/TaheraModel.swift) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 214.00 Td (Windows app UI: Windows Port/TaheraWin/MainWindow.xaml) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 201.00 Td (Field replay helper: tools/bonkers_log_to_field.py) Tj ET
+BT /F3 10 Tf 0.800 0.940 1.000 rg 61.00 188.00 Td (Image conversion script: tools/convert_images_to_bmp.sh) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 163.00 Td (End of ultimate manual. Keep this document synchronized with code after port) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 147.00 Td (map changes, control remapping changes, slot behavior updates, and release) Tj ET
+BT /F1 12 Tf 0.740 0.870 0.950 rg 52.00 131.00 Td (workflow updates.) Tj ET
+endstream
+endobj
+37 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 36 0 R >>
+endobj
+xref
+0 38
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000226 00000 n 
+0000000296 00000 n 
+0000000371 00000 n 
+0000000439 00000 n 
+0000001820 00000 n 
+0000001966 00000 n 
+0000006079 00000 n 
+0000006225 00000 n 
+0000009751 00000 n 
+0000009899 00000 n 
+0000013845 00000 n 
+0000013993 00000 n 
+0000017567 00000 n 
+0000017715 00000 n 
+0000021728 00000 n 
+0000021876 00000 n 
+0000025678 00000 n 
+0000025826 00000 n 
+0000029389 00000 n 
+0000029537 00000 n 
+0000033494 00000 n 
+0000033642 00000 n 
+0000037320 00000 n 
+0000037468 00000 n 
+0000041204 00000 n 
+0000041352 00000 n 
+0000045272 00000 n 
+0000045420 00000 n 
+0000049419 00000 n 
+0000049567 00000 n 
+0000053136 00000 n 
+0000053284 00000 n 
+0000056658 00000 n 
+0000056806 00000 n 
+0000060806 00000 n 
+trailer
+<< /Size 38 /Root 1 0 R >>
+startxref
+60954
+%%EOF

@@ -85,6 +85,11 @@
               <StackPanel>
                 <TextBlock Text="Map each Tahera action to a controller button." Foreground="{StaticResource SubBrush}" Margin="0,0,0,12"/>
 
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                  <TextBlock Text="Drive Mode" VerticalAlignment="Center" Width="250"/>
+                  <ComboBox x:Name="DriveModeCombo" Width="220" SelectionChanged="DriveModeCombo_SelectionChanged"/>
+                </StackPanel>
+
                 <Grid Margin="0,0,0,4">
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="250"/>

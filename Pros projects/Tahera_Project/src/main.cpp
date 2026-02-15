@@ -129,6 +129,22 @@ std::uint32_t g_auton_end_ms = 0;
 bool g_auton_abort = false;
 constexpr std::uint32_t kSelectionUiTimeoutMs = 5000;
 
+enum class DriveControlMode {
+    TANK = 0,
+    ARCADE_2_STICK,
+    DPAD
+};
+
+static DriveControlMode g_drive_mode = DriveControlMode::TANK;
+
+constexpr char kRecordLogPrefix[] = "/usd/bonkers_log_";
+constexpr int kRecordFlushThreshold = 25;
+static bool g_drive_recording = false;
+static FILE* g_record_file = nullptr;
+static std::string g_record_path;
+static std::vector<std::string> g_record_buffer;
+pros::Mutex g_record_mutex;
+
 enum class ControllerAction {
     INTAKE_IN = 0,
     INTAKE_OUT,
@@ -183,6 +199,43 @@ pros::controller_digital_e_t default_controller_button(ControllerAction action) 
 
 pros::controller_digital_e_t mapped_button(ControllerAction action) {
     return g_controller_mapping[static_cast<int>(action)];
+}
+
+const char* drive_mode_key(DriveControlMode mode) {
+    switch (mode) {
+        case DriveControlMode::TANK: return "TANK";
+        case DriveControlMode::ARCADE_2_STICK: return "ARCADE_2_STICK";
+        case DriveControlMode::DPAD: return "DPAD";
+        default: return "TANK";
+    }
+}
+
+const char* drive_mode_display(DriveControlMode mode) {
+    switch (mode) {
+        case DriveControlMode::TANK: return "TANK";
+        case DriveControlMode::ARCADE_2_STICK: return "2STICK";
+        case DriveControlMode::DPAD: return "DPAD";
+        default: return "TANK";
+    }
+}
+
+bool parse_drive_mode(const std::string& key, DriveControlMode* out_mode) {
+    if (!out_mode) {
+        return false;
+    }
+    if (key == "TANK") {
+        *out_mode = DriveControlMode::TANK;
+        return true;
+    }
+    if (key == "ARCADE_2_STICK" || key == "ARCADE2" || key == "ARCADE") {
+        *out_mode = DriveControlMode::ARCADE_2_STICK;
+        return true;
+    }
+    if (key == "DPAD") {
+        *out_mode = DriveControlMode::DPAD;
+        return true;
+    }
+    return false;
 }
 
 enum class StepType {
@@ -394,6 +447,7 @@ bool parse_controller_button(const std::string& key, pros::controller_digital_e_
 }
 
 void reset_controller_mapping_defaults() {
+    g_drive_mode = DriveControlMode::TANK;
     for (int idx = 0; idx < kControllerActionCount; ++idx) {
         const auto action = static_cast<ControllerAction>(idx);
         g_controller_mapping[idx] = default_controller_button(action);
@@ -423,6 +477,14 @@ void load_controller_mapping_from_sd() {
 
         const std::string action_key = uppercase_copy(trim_copy(entry.substr(0, eq)));
         const std::string button_key = uppercase_copy(trim_copy(entry.substr(eq + 1)));
+
+        if (action_key == "DRIVE_MODE") {
+            DriveControlMode mode = DriveControlMode::TANK;
+            if (parse_drive_mode(button_key, &mode)) {
+                g_drive_mode = mode;
+            }
+            continue;
+        }
 
         ControllerAction action = ControllerAction::INTAKE_IN;
         pros::controller_digital_e_t button = DIGITAL_L1;
@@ -493,6 +555,141 @@ void load_ui_images() {
         g_auton_image = coerce_images_path(legacy_run);
     }
     g_run_image = g_auton_image.empty() ? g_run_image : g_auton_image;
+}
+
+std::string make_record_log_path() {
+    char path[128];
+    std::snprintf(path, sizeof(path), "%s%u.txt", kRecordLogPrefix, pros::millis());
+    return std::string(path);
+}
+
+void record_flush_locked() {
+    if (!g_record_file || g_record_buffer.empty()) {
+        return;
+    }
+    for (const auto& line : g_record_buffer) {
+        std::fwrite(line.data(), 1, line.size(), g_record_file);
+    }
+    std::fflush(g_record_file);
+    g_record_buffer.clear();
+}
+
+void record_append_locked(const char* type, const char* value) {
+    if (!g_record_file || !type || !value) {
+        return;
+    }
+    char row[96];
+    const int written = std::snprintf(row, sizeof(row), "%s : %s\n", type, value);
+    if (written > 0) {
+        g_record_buffer.emplace_back(row, static_cast<std::size_t>(written));
+    }
+}
+
+void record_append_locked(const char* type, int value) {
+    char text[16];
+    std::snprintf(text, sizeof(text), "%d", value);
+    record_append_locked(type, text);
+}
+
+bool start_drive_recording() {
+    g_record_mutex.take();
+    if (g_drive_recording && g_record_file) {
+        g_record_mutex.give();
+        return true;
+    }
+
+    g_record_path = make_record_log_path();
+    g_record_file = sd_open(g_record_path.c_str(), "w");
+    if (!g_record_file) {
+        g_drive_recording = false;
+        g_record_path.clear();
+        g_record_mutex.give();
+        return false;
+    }
+
+    g_record_buffer.clear();
+    g_record_buffer.reserve(kRecordFlushThreshold);
+    g_drive_recording = true;
+    record_append_locked("REC_START", "TAHERA");
+    record_append_locked("DRIVE_MODE", drive_mode_key(g_drive_mode));
+    record_flush_locked();
+    g_record_mutex.give();
+    return true;
+}
+
+void stop_drive_recording(const char* reason) {
+    g_record_mutex.take();
+    if (!g_record_file) {
+        g_drive_recording = false;
+        g_record_mutex.give();
+        return;
+    }
+
+    if (reason && reason[0] != '\0') {
+        record_append_locked("REC_STOP", reason);
+    }
+    record_flush_locked();
+    std::fclose(g_record_file);
+    g_record_file = nullptr;
+    g_drive_recording = false;
+    g_record_mutex.give();
+}
+
+void record_status_snapshot(bool* active, std::string* path) {
+    g_record_mutex.take();
+    if (active) {
+        *active = g_drive_recording;
+    }
+    if (path) {
+        *path = g_record_path;
+    }
+    g_record_mutex.give();
+}
+
+void record_drive_frame(int axis1,
+                        int axis2,
+                        int axis3,
+                        int axis4,
+                        bool intake_in_pressed,
+                        bool intake_out_pressed,
+                        bool outake_out_pressed,
+                        bool outake_in_pressed,
+                        bool gps_enable_pressed,
+                        bool gps_disable_pressed,
+                        bool six_on_pressed,
+                        bool six_off_pressed,
+                        bool dpad_up_pressed,
+                        bool dpad_down_pressed,
+                        bool dpad_left_pressed,
+                        bool dpad_right_pressed) {
+    g_record_mutex.take();
+    if (!g_drive_recording || !g_record_file) {
+        g_record_mutex.give();
+        return;
+    }
+
+    record_append_locked("AXIS1", axis1);
+    record_append_locked("AXIS2", axis2);
+    record_append_locked("AXIS3", axis3);
+    record_append_locked("AXIS4", axis4);
+
+    if (intake_in_pressed) record_append_locked("BTN_INTAKE_IN", "INTAKE_IN");
+    if (intake_out_pressed) record_append_locked("BTN_INTAKE_OUT", "INTAKE_OUT");
+    if (outake_out_pressed) record_append_locked("BTN_OUTAKE_OUT", "OUTAKE_OUT");
+    if (outake_in_pressed) record_append_locked("BTN_OUTAKE_IN", "OUTAKE_IN");
+    if (gps_enable_pressed) record_append_locked("BTN_GPS_ENABLE", "GPS_ENABLE");
+    if (gps_disable_pressed) record_append_locked("BTN_GPS_DISABLE", "GPS_DISABLE");
+    if (six_on_pressed) record_append_locked("BTN_SIX_ON", "SIX_WHEEL_ON");
+    if (six_off_pressed) record_append_locked("BTN_SIX_OFF", "SIX_WHEEL_OFF");
+    if (dpad_up_pressed) record_append_locked("BTN_DPAD_UP", "DPAD_UP");
+    if (dpad_down_pressed) record_append_locked("BTN_DPAD_DOWN", "DPAD_DOWN");
+    if (dpad_left_pressed) record_append_locked("BTN_DPAD_LEFT", "DPAD_LEFT");
+    if (dpad_right_pressed) record_append_locked("BTN_DPAD_RIGHT", "DPAD_RIGHT");
+
+    if (static_cast<int>(g_record_buffer.size()) >= kRecordFlushThreshold) {
+        record_flush_locked();
+    }
+    g_record_mutex.give();
 }
 
 bool auton_time_up() {
@@ -601,10 +798,16 @@ void draw_brain_ui() {
     const Rect gps_btn{10, 10, 140, 30};
     const Rect basic_btn{170, 10, 140, 30};
     const Rect run_btn{330, 10, 140, 30};
+    const Rect rec_btn{330, 50, 140, 30};
+
+    bool recording = false;
+    std::string record_path;
+    record_status_snapshot(&recording, &record_path);
 
     draw_button(gps_btn, "GPS", g_auton_mode == AutonMode::GPS_LEMLIB ? 0x0000FF00 : 0x00FFFFFF);
     draw_button(basic_btn, "BASIC", g_auton_mode == AutonMode::NO_GPS ? 0x0000FF00 : 0x00FFFFFF);
     draw_button(run_btn, g_auton_running ? "RUNNING" : "RUN", 0x00FF0000);
+    draw_button(rec_btn, recording ? "STOP REC" : "REC", recording ? 0x00FF0000 : 0x0000FF00);
 
     pros::screen::set_pen(pros::c::COLOR_WHITE);
     pros::screen::print(TEXT_MEDIUM, 10, 70, "AUTON: %s",
@@ -613,7 +816,16 @@ void draw_brain_ui() {
                         g_sd_plans_loaded ? "SD" : "BUILT-IN");
     pros::screen::print(TEXT_MEDIUM, 10, 120, "SD: %s", g_sd_plans_loaded ? "OK" : "MISSING");
     pros::screen::print(TEXT_MEDIUM, 10, 145, "SLOT: %d", g_active_slot + 1);
-    pros::screen::print(TEXT_MEDIUM, 10, 210, "Tap RUN to start auton");
+    pros::screen::print(TEXT_MEDIUM, 10, 170, "DRIVE: %s", drive_mode_display(g_drive_mode));
+    pros::screen::print(TEXT_MEDIUM, 10, 195, "REC: %s", recording ? "ON" : "OFF");
+
+    std::string display_file = "(none)";
+    if (!record_path.empty()) {
+        const std::size_t slash = record_path.find_last_of('/');
+        display_file = (slash == std::string::npos) ? record_path : record_path.substr(slash + 1);
+    }
+    pros::screen::print(TEXT_MEDIUM, 170, 195, "FILE: %s", display_file.c_str());
+    pros::screen::print(TEXT_MEDIUM, 10, 220, "Tap RUN for auton / REC for driving log");
 }
 
 void brain_ui_loop() {
@@ -640,10 +852,20 @@ void brain_ui_loop() {
             const Rect gps_btn{10, 10, 140, 30};
             const Rect basic_btn{170, 10, 140, 30};
             const Rect run_btn{330, 10, 140, 30};
+            const Rect rec_btn{330, 50, 140, 30};
 
             if (hit_test(gps_btn, x, y)) g_auton_mode = AutonMode::GPS_LEMLIB;
             if (hit_test(basic_btn, x, y)) g_auton_mode = AutonMode::NO_GPS;
             if (hit_test(run_btn, x, y) && !g_auton_running) g_manual_auton_request = true;
+            if (hit_test(rec_btn, x, y)) {
+                bool recording = false;
+                record_status_snapshot(&recording, nullptr);
+                if (recording) {
+                    stop_drive_recording("USER");
+                } else {
+                    start_drive_recording();
+                }
+            }
 
             draw_brain_ui();
         }
@@ -673,6 +895,7 @@ void run_selected_auton() {
     g_auton_abort = false;
     g_auton_mutex.give();
     g_ui_locked = true;
+    stop_drive_recording("AUTON");
     show_run_image_once();
 
     if (g_auton_mode == AutonMode::GPS_LEMLIB) {
@@ -811,16 +1034,19 @@ void auton_watchdog_task_fn(void*) {
     }
 }
 
-void update_auton_mode_from_controller() {
-    if (master.get_digital_new_press(mapped_button(ControllerAction::GPS_ENABLE))) {
+void update_auton_mode_from_controller(bool gps_enable_pressed,
+                                       bool gps_disable_pressed,
+                                       bool six_on_pressed,
+                                       bool six_off_pressed) {
+    if (gps_enable_pressed) {
         g_gps_drive_enabled = true;
-    } else if (master.get_digital_new_press(mapped_button(ControllerAction::GPS_DISABLE))) {
+    } else if (gps_disable_pressed) {
         g_gps_drive_enabled = false;
     }
 
-    if (master.get_digital_new_press(mapped_button(ControllerAction::SIX_WHEEL_ON))) {
+    if (six_on_pressed) {
         g_six_wheel_drive_enabled = true;
-    } else if (master.get_digital_new_press(mapped_button(ControllerAction::SIX_WHEEL_OFF))) {
+    } else if (six_off_pressed) {
         g_six_wheel_drive_enabled = false;
     }
 }
@@ -1009,8 +1235,49 @@ void opcontrol() {
     g_show_selection_ui = true;
     g_last_ui_ms = pros::millis();
     draw_brain_ui();
+
+    bool prev_intake_in = false;
+    bool prev_intake_out = false;
+    bool prev_outake_out = false;
+    bool prev_outake_in = false;
+    bool prev_gps_enable = false;
+    bool prev_gps_disable = false;
+    bool prev_six_on = false;
+    bool prev_six_off = false;
+    bool prev_dpad_up = false;
+    bool prev_dpad_down = false;
+    bool prev_dpad_left = false;
+    bool prev_dpad_right = false;
+
     while (true) {
-        update_auton_mode_from_controller();
+        const bool intake_in_now = master.get_digital(mapped_button(ControllerAction::INTAKE_IN));
+        const bool intake_out_now = master.get_digital(mapped_button(ControllerAction::INTAKE_OUT));
+        const bool outake_out_now = master.get_digital(mapped_button(ControllerAction::OUTAKE_OUT));
+        const bool outake_in_now = master.get_digital(mapped_button(ControllerAction::OUTAKE_IN));
+        const bool gps_enable_now = master.get_digital(mapped_button(ControllerAction::GPS_ENABLE));
+        const bool gps_disable_now = master.get_digital(mapped_button(ControllerAction::GPS_DISABLE));
+        const bool six_on_now = master.get_digital(mapped_button(ControllerAction::SIX_WHEEL_ON));
+        const bool six_off_now = master.get_digital(mapped_button(ControllerAction::SIX_WHEEL_OFF));
+        const bool dpad_up = master.get_digital(DIGITAL_UP);
+        const bool dpad_down = master.get_digital(DIGITAL_DOWN);
+        const bool dpad_left = master.get_digital(DIGITAL_LEFT);
+        const bool dpad_right = master.get_digital(DIGITAL_RIGHT);
+
+        const bool intake_in_pressed = intake_in_now && !prev_intake_in;
+        const bool intake_out_pressed = intake_out_now && !prev_intake_out;
+        const bool outake_out_pressed = outake_out_now && !prev_outake_out;
+        const bool outake_in_pressed = outake_in_now && !prev_outake_in;
+        const bool gps_enable_pressed = gps_enable_now && !prev_gps_enable;
+        const bool gps_disable_pressed = gps_disable_now && !prev_gps_disable;
+        const bool six_on_pressed = six_on_now && !prev_six_on;
+        const bool six_off_pressed = six_off_now && !prev_six_off;
+        const bool dpad_up_pressed = dpad_up && !prev_dpad_up;
+        const bool dpad_down_pressed = dpad_down && !prev_dpad_down;
+        const bool dpad_left_pressed = dpad_left && !prev_dpad_left;
+        const bool dpad_right_pressed = dpad_right && !prev_dpad_right;
+
+        update_auton_mode_from_controller(gps_enable_pressed, gps_disable_pressed,
+                                          six_on_pressed, six_off_pressed);
 
         if (g_manual_auton_request) {
             g_manual_auton_request = false;
@@ -1018,91 +1285,140 @@ void opcontrol() {
         }
 
         if (g_auton_running) {
+            prev_intake_in = intake_in_now;
+            prev_intake_out = intake_out_now;
+            prev_outake_out = outake_out_now;
+            prev_outake_in = outake_in_now;
+            prev_gps_enable = gps_enable_now;
+            prev_gps_disable = gps_disable_now;
+            prev_six_on = six_on_now;
+            prev_six_off = six_off_now;
+            prev_dpad_up = dpad_up;
+            prev_dpad_down = dpad_down;
+            prev_dpad_left = dpad_left;
+            prev_dpad_right = dpad_right;
             pros::delay(20);
             continue;
         }
+
         if (g_force_driver_image && g_show_selection_ui &&
             (pros::millis() - g_last_ui_ms) > kSelectionUiTimeoutMs) {
             g_show_selection_ui = false;
             show_driver_image_once();
         }
-        // --- DRIVE LOGIC (D-PAD OVERRIDE + TANK) ---
-        const bool dpad_up = master.get_digital(DIGITAL_UP);
-        const bool dpad_down = master.get_digital(DIGITAL_DOWN);
-        const bool dpad_left = master.get_digital(DIGITAL_LEFT);
-        const bool dpad_right = master.get_digital(DIGITAL_RIGHT);
 
         int left_cmd = 0;
         int right_cmd = 0;
+        const int left_y = master.get_analog(ANALOG_LEFT_Y);
+        const int right_y = master.get_analog(ANALOG_RIGHT_Y);
+        const int right_x = master.get_analog(ANALOG_RIGHT_X);
+        const int left_x = master.get_analog(ANALOG_LEFT_X);
+        const auto clamp_cmd = [](int value) {
+            return std::max(-127, std::min(127, value));
+        };
 
-        if (dpad_up || dpad_down || dpad_left || dpad_right) {
-            constexpr int kDpadSpeed = 80;
-            if (g_gps_drive_enabled) {
-                double target = 0.0;
-                if (dpad_up) {
-                    target = 0.0;
-                } else if (dpad_right) {
-                    target = 90.0;
-                } else if (dpad_down) {
-                    target = 180.0;
-                } else if (dpad_left) {
-                    target = 270.0;
-                }
-
-                double heading = gps.get_heading() / 100.0;
-                double error = target - heading;
-                if (error > 180.0) error -= 360.0;
-                if (error < -180.0) error += 360.0;
-
-                const double kp = 1.2;
-                double turn = error * kp;
-                if (turn > 60.0) turn = 60.0;
-                if (turn < -60.0) turn = -60.0;
-
-                left_cmd = static_cast<int>(kDpadSpeed - turn);
-                right_cmd = static_cast<int>(kDpadSpeed + turn);
-            } else {
-                if (dpad_up) {
-                    left_cmd = kDpadSpeed;
-                    right_cmd = kDpadSpeed;
-                } else if (dpad_down) {
-                    left_cmd = -kDpadSpeed;
-                    right_cmd = -kDpadSpeed;
-                } else if (dpad_left) {
-                    left_cmd = -kDpadSpeed;
-                    right_cmd = kDpadSpeed;
-                } else if (dpad_right) {
-                    left_cmd = kDpadSpeed;
-                    right_cmd = -kDpadSpeed;
-                }
+        switch (g_drive_mode) {
+            case DriveControlMode::TANK:
+                left_cmd = left_y;
+                right_cmd = right_y;
+                break;
+            case DriveControlMode::ARCADE_2_STICK: {
+                const int throttle = left_y;
+                const int turn = right_x;
+                left_cmd = clamp_cmd(throttle + turn);
+                right_cmd = clamp_cmd(throttle - turn);
+                break;
             }
-        } else {
-            // Left stick controls left side, Right stick controls right side
-            int left_y = master.get_analog(ANALOG_LEFT_Y);
-            int right_y = master.get_analog(ANALOG_RIGHT_Y);
-            left_cmd = left_y;
-            right_cmd = right_y;
+            case DriveControlMode::DPAD:
+            default: {
+                if (dpad_up || dpad_down || dpad_left || dpad_right) {
+                    constexpr int kDpadSpeed = 80;
+                    if (g_gps_drive_enabled) {
+                        double target = 0.0;
+                        if (dpad_up) {
+                            target = 0.0;
+                        } else if (dpad_right) {
+                            target = 90.0;
+                        } else if (dpad_down) {
+                            target = 180.0;
+                        } else if (dpad_left) {
+                            target = 270.0;
+                        }
+
+                        double heading = gps.get_heading() / 100.0;
+                        double error = target - heading;
+                        if (error > 180.0) error -= 360.0;
+                        if (error < -180.0) error += 360.0;
+
+                        const double kp = 1.2;
+                        double turn = error * kp;
+                        if (turn > 60.0) turn = 60.0;
+                        if (turn < -60.0) turn = -60.0;
+
+                        left_cmd = static_cast<int>(kDpadSpeed - turn);
+                        right_cmd = static_cast<int>(kDpadSpeed + turn);
+                    } else {
+                        if (dpad_up) {
+                            left_cmd = kDpadSpeed;
+                            right_cmd = kDpadSpeed;
+                        } else if (dpad_down) {
+                            left_cmd = -kDpadSpeed;
+                            right_cmd = -kDpadSpeed;
+                        } else if (dpad_left) {
+                            left_cmd = -kDpadSpeed;
+                            right_cmd = kDpadSpeed;
+                        } else if (dpad_right) {
+                            left_cmd = kDpadSpeed;
+                            right_cmd = -kDpadSpeed;
+                        }
+                    }
+                } else {
+                    left_cmd = 0;
+                    right_cmd = 0;
+                }
+                break;
+            }
         }
 
         drive_set(left_cmd, right_cmd);
 
-        // --- LEFT SIDE INTAKE + OUTTAKE (L1/L2) ---
-        if (master.get_digital(mapped_button(ControllerAction::INTAKE_IN))) {
+        if (intake_in_now) {
             intake.move(127);
-        } else if (master.get_digital(mapped_button(ControllerAction::INTAKE_OUT))) {
+        } else if (intake_out_now) {
             intake.move(-127);
         } else {
             intake.brake();
         }
 
-        // --- RIGHT SIDE INTAKE + OUTTAKE (R1/R2) ---
-        if (master.get_digital(mapped_button(ControllerAction::OUTAKE_OUT))) {
+        if (outake_out_now) {
             outake.move(127);
-        } else if (master.get_digital(mapped_button(ControllerAction::OUTAKE_IN))) {
+        } else if (outake_in_now) {
             outake.move(-127);
         } else {
             outake.brake();
         }
+
+        // Replay integration expects AXIS3=left command and AXIS2=right command.
+        record_drive_frame(right_x, right_cmd, left_cmd, left_x,
+                           intake_in_pressed, intake_out_pressed,
+                           outake_out_pressed, outake_in_pressed,
+                           gps_enable_pressed, gps_disable_pressed,
+                           six_on_pressed, six_off_pressed,
+                           dpad_up_pressed, dpad_down_pressed,
+                           dpad_left_pressed, dpad_right_pressed);
+
+        prev_intake_in = intake_in_now;
+        prev_intake_out = intake_out_now;
+        prev_outake_out = outake_out_now;
+        prev_outake_in = outake_in_now;
+        prev_gps_enable = gps_enable_now;
+        prev_gps_disable = gps_disable_now;
+        prev_six_on = six_on_now;
+        prev_six_off = six_off_now;
+        prev_dpad_up = dpad_up;
+        prev_dpad_down = dpad_down;
+        prev_dpad_left = dpad_left;
+        prev_dpad_right = dpad_right;
 
         pros::delay(20);
     }
