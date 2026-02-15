@@ -7,7 +7,6 @@ enum AppSection: String, CaseIterable, Identifiable {
     case portMap = "Port Map"
     case sdCard = "SD Card"
     case field = "Field Replay"
-    case virtualBrain = "Virtual Brain"
     case vexOS = "VEX OS UI"
     case readme = "README"
     case github = "Repository Settings"
@@ -28,8 +27,6 @@ enum AppSection: String, CaseIterable, Identifiable {
             return "sdcard.fill"
         case .field:
             return "map.fill"
-        case .virtualBrain:
-            return "cpu.fill"
         case .vexOS:
             return "display.2"
         case .readme:

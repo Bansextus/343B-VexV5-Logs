@@ -34,6 +34,7 @@ struct VexOSView: View {
     @State private var displayPoseX: Double = 24
     @State private var displayPoseY: Double = 24
     @State private var displayHeadingDegrees: Double = 0
+    @AppStorage("Tahera.ExactBrainMode") private var exactBrainMode: Bool = false
     @StateObject private var gamepad = GamepadBridge()
 
     private let vexScreenWidth: CGFloat = 480
@@ -47,10 +48,14 @@ struct VexOSView: View {
 
                 Card {
                     HStack {
-                        Text("Digital Brain Emulation")
+                        Text("V5 Screen Emulation")
                             .foregroundColor(Theme.text)
                             .font(.system(size: 24, weight: .semibold, design: .rounded))
                         Spacer()
+                        Toggle("Exact Brain Mode", isOn: $exactBrainMode)
+                            .toggleStyle(.switch)
+                            .foregroundColor(Theme.subtext)
+                            .font(.system(size: 14, weight: .semibold, design: .rounded))
                         Picker("Program", selection: $emulatedProgram) {
                             ForEach(EmulatedProgram.allCases) { program in
                                 Text(program.rawValue).tag(program)
@@ -128,6 +133,36 @@ struct VexOSView: View {
                         .buttonStyle(TaheraActionButtonStyle())
 
                         Spacer()
+                    }
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Digital Bot Settings")
+                            .foregroundColor(Theme.text)
+                            .font(.system(size: 18, weight: .bold, design: .rounded))
+
+                        HStack(spacing: 10) {
+                            Text("Speed")
+                                .foregroundColor(Theme.subtext)
+                                .frame(width: 56, alignment: .leading)
+                            Slider(value: $brain.botSpeedScale, in: 0.35...2.4)
+                                .tint(Theme.accent)
+                            Text(String(format: "%.2fx", brain.botSpeedScale))
+                                .foregroundColor(Theme.subtext)
+                                .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                                .frame(width: 56, alignment: .trailing)
+                        }
+
+                        HStack(spacing: 10) {
+                            Text("Size")
+                                .foregroundColor(Theme.subtext)
+                                .frame(width: 56, alignment: .leading)
+                            Slider(value: $brain.botSizeScale, in: 0.5...2.2)
+                                .tint(Theme.accent)
+                            Text(String(format: "%.2fx", brain.botSizeScale))
+                                .foregroundColor(Theme.subtext)
+                                .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                                .frame(width: 56, alignment: .trailing)
+                        }
                     }
 
                     if let fieldImage = loadFieldImage() {
@@ -288,73 +323,92 @@ struct VexOSView: View {
     }
 
     private var vexBrainFrame: some View {
-        GeometryReader { proxy in
-            let width = proxy.size.width
-            let height = width * 0.53
-            ZStack {
-                RoundedRectangle(cornerRadius: 26, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [Color(hex: 0x3B434F), Color(hex: 0x262E38)],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-                    .overlay(
+        let baseWidth: CGFloat = 960
+        let baseHeight: CGFloat = 510
+
+        return ZStack {
+            RoundedRectangle(cornerRadius: 26, style: .continuous)
+                .fill(
+                    exactBrainMode
+                        ? Color(hex: 0x343A44)
+                        : Color.clear
+                )
+                .overlay {
+                    if !exactBrainMode {
                         RoundedRectangle(cornerRadius: 26, style: .continuous)
-                            .stroke(Color.white.opacity(0.16), lineWidth: 1.2)
-                    )
-
-                VStack(spacing: 10) {
-                    portRow(top: true)
-
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(Color(hex: 0x262B31))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .stroke(Color.white.opacity(0.12), lineWidth: 1)
-                        )
-                        .overlay(vexScreen)
-                        .padding(.horizontal, 16)
-
-                    HStack(spacing: 10) {
-                        portRow(top: false)
-                        Spacer()
-                        VStack(alignment: .trailing, spacing: 6) {
-                            Text("VEX")
-                                .font(.system(size: 15, weight: .black, design: .rounded))
-                                .foregroundColor(Color(hex: 0xF65B4D))
-                            Circle()
-                                .fill(Color(hex: 0x13171E))
-                                .frame(width: 26, height: 26)
-                                .overlay(
-                                    Circle()
-                                        .stroke(Color(hex: 0xF65B4D), lineWidth: 2)
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color(hex: 0x3B434F), Color(hex: 0x262E38)],
+                                    startPoint: .top,
+                                    endPoint: .bottom
                                 )
-                        }
-                        .padding(.trailing, 16)
+                            )
                     }
-                    .padding(.bottom, 8)
                 }
+                .overlay(
+                    RoundedRectangle(cornerRadius: 26, style: .continuous)
+                        .stroke(Color.white.opacity(0.16), lineWidth: 1.2)
+                )
+
+            VStack(spacing: 10) {
+                portRow(top: true)
+
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(exactBrainMode ? Color(hex: 0x2A2E35) : Color(hex: 0x262B31))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                    )
+                    .overlay(vexScreen)
+                    .padding(.horizontal, 16)
+
+                HStack(spacing: 10) {
+                    portRow(top: false)
+                    Spacer()
+                    VStack(alignment: .trailing, spacing: 6) {
+                        Text("VEX")
+                            .font(.system(size: 15, weight: .black, design: .rounded))
+                            .foregroundColor(Color(hex: 0xF65B4D))
+                        Circle()
+                            .fill(Color(hex: 0x13171E))
+                            .frame(width: 26, height: 26)
+                            .overlay(
+                                Circle()
+                                    .stroke(Color(hex: 0xF65B4D), lineWidth: 2)
+                            )
+                    }
+                    .padding(.trailing, 16)
+                }
+                .padding(.bottom, 8)
             }
-            .frame(width: width, height: height)
         }
-        .frame(height: 380)
+        .frame(width: baseWidth, height: baseHeight)
+        .aspectRatio(baseWidth / baseHeight, contentMode: .fit)
+        .frame(maxWidth: .infinity)
     }
 
     private var vexScreen: some View {
         GeometryReader { proxy in
-            let scale = min(proxy.size.width / vexScreenWidth, proxy.size.height / vexScreenHeight)
+            let fitScale = min(proxy.size.width / vexScreenWidth, proxy.size.height / vexScreenHeight)
+            let renderScale = exactBrainMode ? min(1.0, fitScale) : fitScale
             ZStack(alignment: .topLeading) {
                 Rectangle()
                     .fill(Color.black)
 
                 programScreen
                     .frame(width: vexScreenWidth, height: vexScreenHeight, alignment: .topLeading)
-                    .scaleEffect(scale, anchor: .topLeading)
-                    .frame(width: proxy.size.width, height: proxy.size.height, alignment: .topLeading)
+                    .scaleEffect(renderScale, anchor: .center)
+                    .position(
+                        x: proxy.size.width / 2.0,
+                        y: proxy.size.height / 2.0
+                    )
             }
-            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .clipShape(
+                RoundedRectangle(
+                    cornerRadius: exactBrainMode ? 2 : 8,
+                    style: .continuous
+                )
+            )
         }
     }
 
@@ -664,7 +718,8 @@ struct VexOSView: View {
         }
 
         let robotCenter = fieldPoint(x: displayPoseX, y: displayPoseY, in: size)
-        let headingLen = max(15, size.width * 0.03)
+        let robotDiameter = max(9, min(26, 15 * brain.botSizeScale))
+        let headingLen = max(15, size.width * 0.03) * CGFloat(max(0.6, min(2.2, brain.botSizeScale)))
         let headingRad = displayHeadingDegrees * .pi / 180.0
         let headingPoint = CGPoint(
             x: robotCenter.x + CGFloat(cos(headingRad)) * headingLen,
@@ -673,7 +728,7 @@ struct VexOSView: View {
 
         Circle()
             .fill(brain.robotVisualColor)
-            .frame(width: 15, height: 15)
+            .frame(width: robotDiameter, height: robotDiameter)
             .shadow(color: brain.robotVisualColor.opacity(0.55), radius: 5)
             .position(robotCenter)
 
@@ -768,7 +823,13 @@ struct VexOSView: View {
 
     private func screenText(_ text: String, x: CGFloat, y: CGFloat) -> some View {
         Text(text)
-            .font(.system(size: 16, weight: .semibold, design: .monospaced))
+            .font(
+                .system(
+                    size: exactBrainMode ? 12.5 : 15.0,
+                    weight: exactBrainMode ? .medium : .semibold,
+                    design: .monospaced
+                )
+            )
             .foregroundColor(VexColor.white)
             .frame(width: vexScreenWidth - x - 4, alignment: .leading)
             .offset(x: x, y: y)
@@ -776,6 +837,7 @@ struct VexOSView: View {
 }
 
 private struct VexScreenButton: View {
+    @AppStorage("Tahera.ExactBrainMode") private var exactBrainMode: Bool = true
     let label: String
     let x: CGFloat
     let y: CGFloat
@@ -787,17 +849,25 @@ private struct VexScreenButton: View {
     var body: some View {
         Button(action: action) {
             ZStack {
+                if !exactBrainMode {
+                    Rectangle()
+                        .fill(color.opacity(0.13))
+                }
                 Rectangle()
-                    .fill(color.opacity(0.13))
-                Rectangle()
-                    .stroke(color, lineWidth: 2)
+                    .stroke(color, lineWidth: exactBrainMode ? 1.4 : 2.0)
                 Text(label)
-                    .font(.system(size: 14, weight: .bold, design: .monospaced))
+                    .font(
+                        .system(
+                            size: exactBrainMode ? 12.0 : 14.0,
+                            weight: exactBrainMode ? .semibold : .bold,
+                            design: .monospaced
+                        )
+                    )
                     .foregroundColor(color)
             }
-            .frame(width: w, height: h)
-            .offset(x: x, y: y)
         }
+        .frame(width: w, height: h)
+        .position(x: x + (w / 2.0), y: y + (h / 2.0))
         .buttonStyle(.plain)
     }
 }

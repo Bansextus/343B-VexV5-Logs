@@ -262,6 +262,8 @@ final class VirtualBrainCore: ObservableObject {
     @Published var gameTubes: [VirtualGameTube] = []
     @Published var carriedBlockCount: Int = 0
     @Published var scoredBlockCount: Int = 0
+    @Published var botSpeedScale: Double = 1.0
+    @Published var botSizeScale: Double = 1.0
 
     private let tickIntervalSeconds: Double = 0.02
     private let timerQueue = DispatchQueue(label: "Tahera.VirtualBrain.Timer")
@@ -851,6 +853,8 @@ final class VirtualBrainCore: ObservableObject {
         outakeCommand = 0
         gpsDriveEnabled = false
         sixWheelDriveEnabled = true
+        botSpeedScale = 1.0
+        botSizeScale = 1.0
         poseXInches = fieldSizeInches / 2
         poseYInches = fieldSizeInches / 2
         headingRadians = 0
@@ -1738,6 +1742,7 @@ final class VirtualBrainCore: ObservableObject {
             }
 
             let dpadSpeed = 80
+            let scaledDpadSpeed = clamp(Int((Double(dpadSpeed) * botSpeedScale).rounded()), min: 25, max: 127)
             if gpsDriveEnabled {
                 var target = 0.0
                 if dpadUp {
@@ -1760,27 +1765,28 @@ final class VirtualBrainCore: ObservableObject {
                 var turn = error * 1.2
                 turn = min(60, max(-60, turn))
                 return (
-                    clamp(Int(Double(dpadSpeed) - turn), min: -127, max: 127),
-                    clamp(Int(Double(dpadSpeed) + turn), min: -127, max: 127)
+                    clamp(Int(Double(scaledDpadSpeed) - turn), min: -127, max: 127),
+                    clamp(Int(Double(scaledDpadSpeed) + turn), min: -127, max: 127)
                 )
             }
 
             if dpadUp {
-                return (dpadSpeed, dpadSpeed)
+                return (scaledDpadSpeed, scaledDpadSpeed)
             }
             if dpadDown {
-                return (-dpadSpeed, -dpadSpeed)
+                return (-scaledDpadSpeed, -scaledDpadSpeed)
             }
             if dpadLeft {
-                return (-dpadSpeed, dpadSpeed)
+                return (-scaledDpadSpeed, scaledDpadSpeed)
             }
-            return (dpadSpeed, -dpadSpeed)
+            return (scaledDpadSpeed, -scaledDpadSpeed)
         }
     }
 
     private func integratePose(left: Int, right: Int) {
-        let leftVelocity = (Double(left) / 127.0) * maxSpeedInchesPerSecond
-        let rightVelocity = (Double(right) / 127.0) * maxSpeedInchesPerSecond
+        let speed = max(8.0, maxSpeedInchesPerSecond * botSpeedScale)
+        let leftVelocity = (Double(left) / 127.0) * speed
+        let rightVelocity = (Double(right) / 127.0) * speed
         let linearVelocity = (leftVelocity + rightVelocity) / 2.0
         let angularVelocity = (rightVelocity - leftVelocity) / trackWidthInches
 
