@@ -13,6 +13,21 @@ struct ControllerMappingView: View {
                         .foregroundColor(Theme.subtext)
                         .font(.system(size: 19, weight: .medium))
 
+                    HStack(spacing: 14) {
+                        Text("Drive Mode")
+                            .foregroundColor(Theme.text)
+                            .font(.system(size: 20, weight: .semibold, design: .rounded))
+                            .frame(width: 240, alignment: .leading)
+
+                        Picker("", selection: $model.driveControlMode) {
+                            ForEach(DriveControlMode.allCases) { mode in
+                                Text(mode.displayName).tag(mode)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .frame(maxWidth: 220, alignment: .leading)
+                    }
+
                     ForEach(ControllerAction.allCases) { action in
                         HStack(spacing: 14) {
                             Text(action.displayName)

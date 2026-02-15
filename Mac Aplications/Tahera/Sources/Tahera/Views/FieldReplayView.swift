@@ -5,6 +5,7 @@ import UniformTypeIdentifiers
 struct FieldReplayView: View {
     @State private var poses: [ReplayPose] = []
     @State private var currentIndex: Int = 0
+    @State private var playbackProgress: Double = 0
     @State private var selectedFileName: String = "No replay file loaded"
     @State private var statusText: String = "Load a replay log (.txt or .csv) to visualize path data."
     @State private var showingImporter: Bool = false
@@ -23,6 +24,7 @@ struct FieldReplayView: View {
                     Button("Clear") {
                         poses = []
                         currentIndex = 0
+                        playbackProgress = 0
                         selectedFileName = "No replay file loaded"
                         statusText = "Load a replay log (.txt or .csv) to visualize path data."
                     }
@@ -88,18 +90,19 @@ struct FieldReplayView: View {
 
     private var sliderRow: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Frame \(currentIndex + 1) / \(poses.count)")
+            Text("Frame \(clampedFrameIndex(from: playbackProgress) + 1) / \(poses.count)")
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundColor(Theme.subtext)
             Slider(
-                value: Binding(
-                    get: { Double(currentIndex) },
-                    set: { currentIndex = Int($0) }
-                ),
+                value: $playbackProgress,
                 in: 0...Double(max(poses.count - 1, 0)),
-                step: 1
+                step: 0.001
             )
             .tint(Theme.accent)
+            .onChange(of: playbackProgress) { value in
+                currentIndex = clampedFrameIndex(from: value)
+                updateReadoutForCurrentFrame()
+            }
         }
     }
 
@@ -126,21 +129,28 @@ struct FieldReplayView: View {
 
     @ViewBuilder
     private func pathOverlay(in size: CGSize) -> some View {
-        let visible = Array(poses.prefix(max(0, min(currentIndex + 1, poses.count))))
-        if visible.count > 1 {
+        let progress = clampedProgress(playbackProgress)
+        let baseCount = min(max(Int(floor(progress)) + 1, 0), poses.count)
+        let hasInterp = Int(floor(progress)) < (poses.count - 1)
+        let interpPose = interpolatedPose(at: progress)
+        let visible = Array(poses.prefix(baseCount))
+
+        if visible.count > 1 || (visible.count == 1 && hasInterp) {
             Path { path in
                 let first = fieldPoint(for: visible[0], in: size)
                 path.move(to: first)
                 for pose in visible.dropFirst() {
                     path.addLine(to: fieldPoint(for: pose, in: size))
                 }
+                if hasInterp, let interpPose {
+                    path.addLine(to: fieldPoint(for: interpPose, in: size))
+                }
             }
             .stroke(Theme.accent, style: StrokeStyle(lineWidth: 2.3, lineCap: .round, lineJoin: .round))
             .shadow(color: Theme.accent.opacity(0.45), radius: 5)
         }
 
-        if !visible.isEmpty {
-            let pose = visible[visible.count - 1]
+        if let pose = interpPose {
             let center = fieldPoint(for: pose, in: size)
             let headingLen = max(12, size.width * 0.03)
             let heading = CGPoint(
@@ -176,22 +186,81 @@ struct FieldReplayView: View {
             let integrated = ReplayParser.integrate(samples: samples, settings: settings)
 
             poses = integrated
-            currentIndex = max(integrated.count - 1, 0)
+            playbackProgress = Double(max(integrated.count - 1, 0))
+            currentIndex = clampedFrameIndex(from: playbackProgress)
             selectedFileName = url.lastPathComponent
-
-            if let pose = integrated.last {
-                statusText = String(
-                    format: "t=%.2fs x=%.1fin y=%.1fin\nleft=%.0f right=%.0f\na1=%.0f a2=%.0f a3=%.0f a4=%.0f\nlast=%@",
-                    pose.t, pose.x, pose.y, pose.leftCmd, pose.rightCmd,
-                    pose.axis1, pose.axis2, pose.axis3, pose.axis4,
-                    pose.action
-                )
-            } else {
+            if integrated.isEmpty {
                 statusText = "The selected file was loaded but no replay samples were parsed."
+            } else {
+                updateReadoutForCurrentFrame()
             }
         } catch {
             statusText = "Failed to load replay file: \(error.localizedDescription)"
         }
+    }
+
+    private func updateReadoutForCurrentFrame() {
+        guard !poses.isEmpty else {
+            return
+        }
+        let idx = clampedFrameIndex(from: playbackProgress)
+        let pose = poses[idx]
+        statusText = String(
+            format: "t=%.2fs x=%.1fin y=%.1fin\nleft=%.0f right=%.0f\na1=%.0f a2=%.0f a3=%.0f a4=%.0f\nlast=%@",
+            pose.t, pose.x, pose.y, pose.leftCmd, pose.rightCmd,
+            pose.axis1, pose.axis2, pose.axis3, pose.axis4,
+            pose.action
+        )
+    }
+
+    private func clampedProgress(_ value: Double) -> Double {
+        guard !poses.isEmpty else { return 0 }
+        let maxProgress = Double(max(poses.count - 1, 0))
+        return min(max(0, value), maxProgress)
+    }
+
+    private func clampedFrameIndex(from progress: Double) -> Int {
+        guard !poses.isEmpty else { return 0 }
+        let clamped = clampedProgress(progress)
+        return min(max(Int(round(clamped)), 0), poses.count - 1)
+    }
+
+    private func interpolatedPose(at progress: Double) -> ReplayPose? {
+        guard !poses.isEmpty else { return nil }
+        let clamped = clampedProgress(progress)
+        let lower = min(max(Int(floor(clamped)), 0), poses.count - 1)
+        let upper = min(lower + 1, poses.count - 1)
+        if lower == upper {
+            return poses[lower]
+        }
+
+        let t = clamped - Double(lower)
+        let start = poses[lower]
+        let end = poses[upper]
+
+        return ReplayPose(
+            t: start.t + (end.t - start.t) * t,
+            x: start.x + (end.x - start.x) * t,
+            y: start.y + (end.y - start.y) * t,
+            theta: interpolateHeading(start.theta, end.theta, t: t),
+            leftCmd: start.leftCmd + (end.leftCmd - start.leftCmd) * t,
+            rightCmd: start.rightCmd + (end.rightCmd - start.rightCmd) * t,
+            axis1: start.axis1 + (end.axis1 - start.axis1) * t,
+            axis2: start.axis2 + (end.axis2 - start.axis2) * t,
+            axis3: start.axis3 + (end.axis3 - start.axis3) * t,
+            axis4: start.axis4 + (end.axis4 - start.axis4) * t,
+            action: end.action
+        )
+    }
+
+    private func interpolateHeading(_ start: Double, _ end: Double, t: Double) -> Double {
+        var delta = end - start
+        if delta > .pi {
+            delta -= (2 * .pi)
+        } else if delta < -.pi {
+            delta += (2 * .pi)
+        }
+        return start + delta * t
     }
 
     private func loadFieldImage() -> NSImage? {

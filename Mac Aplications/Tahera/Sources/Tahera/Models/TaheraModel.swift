@@ -23,6 +23,7 @@ final class TaheraModel: ObservableObject {
     @Published var brainPort: String = ""
 
     @Published var portMap: PortMap = PortMap()
+    @Published var driveControlMode: DriveControlMode = .tank
     @Published var controllerMapping: [ControllerAction: ControllerButton] =
         Dictionary(uniqueKeysWithValues: ControllerAction.allCases.map { ($0, $0.defaultButton) })
     @Published var controllerMappingStatus: String = ""
@@ -46,12 +47,14 @@ final class TaheraModel: ObservableObject {
     private let controllerMappingFileName = "controller_mapping.txt"
     private let busyQueue = DispatchQueue(label: "TaheraModel.BusyQueue")
     private var busyCount = 0
+    let virtualBrain = VirtualBrainCore()
 
     init() {
         refreshSDStatus()
         refreshBrainStatus()
         loadReadme()
         loadControllerMappingFromRepo()
+        virtualBrain.setDefaultVirtualSDPath(for: repoPath)
     }
 
     func unlockRepositorySettings() {
@@ -631,7 +634,8 @@ final class TaheraModel: ObservableObject {
             .path
     }
 
-    private func parseControllerMapping(_ contents: String) -> [ControllerAction: ControllerButton] {
+    private func parseControllerMapping(_ contents: String) -> (DriveControlMode, [ControllerAction: ControllerButton]) {
+        var mode: DriveControlMode = .tank
         var mapping = Dictionary(uniqueKeysWithValues: ControllerAction.allCases.map { ($0, $0.defaultButton) })
         for rawLine in contents.components(separatedBy: .newlines) {
             let line = rawLine.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -642,19 +646,24 @@ final class TaheraModel: ObservableObject {
             if parts.count != 2 {
                 continue
             }
+            if parts[0] == "DRIVE_MODE", let parsedMode = DriveControlMode(rawValue: parts[1]) {
+                mode = parsedMode
+                continue
+            }
             guard let action = ControllerAction(rawValue: parts[0]),
                   let button = ControllerButton(rawValue: parts[1]) else {
                 continue
             }
             mapping[action] = button
         }
-        return mapping
+        return (mode, mapping)
     }
 
     private func serializeControllerMapping() -> String {
         var lines: [String] = [
             "# Tahera controller mapping",
-            "# Edit in Tahera app or manually. Format: ACTION=BUTTON",
+            "# Edit in Tahera app or manually. Format: ACTION=BUTTON (+ DRIVE_MODE)",
+            "DRIVE_MODE=\(driveControlMode.rawValue)",
         ]
         for action in ControllerAction.allCases {
             let button = controllerMapping[action] ?? action.defaultButton
@@ -669,7 +678,8 @@ final class TaheraModel: ObservableObject {
             let text = try String(contentsOfFile: path, encoding: .utf8)
             let parsed = parseControllerMapping(text)
             DispatchQueue.main.async {
-                self.controllerMapping = parsed
+                self.driveControlMode = parsed.0
+                self.controllerMapping = parsed.1
                 self.controllerMappingStatus = "Loaded from \(sourceName)"
             }
             appendLog("Controller mapping loaded from \(sourceName): \(path)")
@@ -703,6 +713,7 @@ final class TaheraModel: ObservableObject {
 
     func resetControllerMappingDefaults() {
         DispatchQueue.main.async {
+            self.driveControlMode = .tank
             self.controllerMapping = Dictionary(uniqueKeysWithValues: ControllerAction.allCases.map { ($0, $0.defaultButton) })
             self.controllerMappingStatus = "Reset to defaults"
         }

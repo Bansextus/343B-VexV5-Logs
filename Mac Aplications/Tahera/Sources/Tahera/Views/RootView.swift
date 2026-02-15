@@ -191,6 +191,8 @@ struct RootView: View {
             SDCardView()
         case .field:
             FieldReplayView()
+        case .vexOS:
+            VexOSView(brain: model.virtualBrain)
         case .readme:
             ReadmeView()
         case .github:

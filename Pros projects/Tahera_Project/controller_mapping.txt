@@ -1,7 +1,6 @@
 # Tahera controller mapping
-# Format: ACTION=BUTTON
-# Valid buttons: L1, L2, R1, R2, A, B, X, Y, UP, DOWN, LEFT, RIGHT
-
+# Edit in Tahera app or manually. Format: ACTION=BUTTON (+ DRIVE_MODE)
+DRIVE_MODE=TANK
 INTAKE_IN=L1
 INTAKE_OUT=L2
 OUTAKE_OUT=R1
@@ -10,4 +9,3 @@ GPS_ENABLE=A
 GPS_DISABLE=B
 SIX_WHEEL_ON=Y
 SIX_WHEEL_OFF=X
-

@@ -7,6 +7,7 @@ enum AppSection: String, CaseIterable, Identifiable {
     case portMap = "Port Map"
     case sdCard = "SD Card"
     case field = "Field Replay"
+    case vexOS = "VEX OS UI"
     case readme = "README"
     case github = "Repository Settings"
 
@@ -26,6 +27,8 @@ enum AppSection: String, CaseIterable, Identifiable {
             return "sdcard.fill"
         case .field:
             return "map.fill"
+        case .vexOS:
+            return "display.2"
         case .readme:
             return "book.closed.fill"
         case .github:
@@ -78,6 +81,25 @@ enum ControllerButton: String, CaseIterable, Identifiable {
     case right = "RIGHT"
 
     var id: String { rawValue }
+}
+
+enum DriveControlMode: String, CaseIterable, Identifiable {
+    case tank = "TANK"
+    case arcade2 = "ARCADE_2_STICK"
+    case dpad = "DPAD"
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .tank:
+            return "Tank Drive"
+        case .arcade2:
+            return "2 Stick Arcade"
+        case .dpad:
+            return "D-Pad"
+        }
+    }
 }
 
 enum ControllerAction: String, CaseIterable, Identifiable {

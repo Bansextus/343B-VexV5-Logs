@@ -35,3 +35,10 @@ The system records joystick samples continuously while the save file creation st
 - **Windows app**: The application offers identical features which operate as a WinForms executable.
 
 The application directories contain multiple Python files which execute various functions through multiple application programs.
+
+## Prototype Branch Workflow
+- Ongoing development should happen on `codex/prototypes`.
+- Release merges should land in `main` only when the prototype branch is stable.
+- Helper script for release merge:
+  - `tools/release_merge_from_prototypes.sh`
+  - Default behavior merges `codex/prototypes` into `main` and pushes `main`.
