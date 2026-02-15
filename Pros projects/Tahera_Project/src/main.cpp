@@ -82,17 +82,18 @@ FILE* sd_open(const char* name, const char* mode) {
 // ======================================================
 // Use distinct names to avoid conflicts with LemLib's global motor groups.
 // Outer motors are grouped; middle motors are controlled separately for 6WD toggle.
-pros::MotorGroup left_drive({-1, -3}, pros::v5::MotorGears::blue);
-pros::MotorGroup right_drive({4, 6}, pros::v5::MotorGears::blue);
+// Port mapping synced with /usd/port_map.json values in this repo.
+pros::MotorGroup left_drive({-6, -1}, pros::v5::MotorGears::blue);
+pros::MotorGroup right_drive({10, 7}, pros::v5::MotorGears::blue);
 pros::Motor left_middle(2, pros::v5::MotorGears::blue);
-pros::Motor right_middle(-5, pros::v5::MotorGears::blue);
+pros::Motor right_middle(-9, pros::v5::MotorGears::blue);
 
-pros::Motor intake(7, pros::v5::MotorGears::blue);
-pros::Motor outake(8, pros::v5::MotorGears::blue);
+pros::Motor intake(13, pros::v5::MotorGears::blue);
+pros::Motor outake(12, pros::v5::MotorGears::blue);
 
 pros::Controller master(pros::E_CONTROLLER_MASTER);
 pros::Imu imu(11);
-pros::Gps gps(10);
+pros::Gps gps(21);
 
 enum class AutonMode {
     GPS_LEMLIB,
@@ -791,6 +792,15 @@ void draw_button(const Rect& r, const char* label, std::uint32_t color) {
     pros::screen::print(TEXT_MEDIUM, r.x + 6, r.y + 8, label);
 }
 
+std::string compact_ui_text(const std::string& value, std::size_t max_chars) {
+    if (value.size() <= max_chars || max_chars < 6) {
+        return value;
+    }
+    const std::size_t head = (max_chars - 3) / 2;
+    const std::size_t tail = max_chars - 3 - head;
+    return value.substr(0, head) + "..." + value.substr(value.size() - tail);
+}
+
 void draw_brain_ui() {
     pros::screen::set_pen(0x00000000);
     pros::screen::fill_rect(0, 0, kScreenW - 1, kScreenH - 1);
@@ -809,23 +819,29 @@ void draw_brain_ui() {
     draw_button(run_btn, g_auton_running ? "RUNNING" : "RUN", 0x00FF0000);
     draw_button(rec_btn, recording ? "STOP REC" : "REC", recording ? 0x00FF0000 : 0x0000FF00);
 
-    pros::screen::set_pen(pros::c::COLOR_WHITE);
-    pros::screen::print(TEXT_MEDIUM, 10, 70, "AUTON: %s",
-                        g_auton_mode == AutonMode::GPS_LEMLIB ? "GPS" : "BASIC");
-    pros::screen::print(TEXT_MEDIUM, 10, 95, "SOURCE: %s",
-                        g_sd_plans_loaded ? "SD" : "BUILT-IN");
-    pros::screen::print(TEXT_MEDIUM, 10, 120, "SD: %s", g_sd_plans_loaded ? "OK" : "MISSING");
-    pros::screen::print(TEXT_MEDIUM, 10, 145, "SLOT: %d", g_active_slot + 1);
-    pros::screen::print(TEXT_MEDIUM, 10, 170, "DRIVE: %s", drive_mode_display(g_drive_mode));
-    pros::screen::print(TEXT_MEDIUM, 10, 195, "REC: %s", recording ? "ON" : "OFF");
-
     std::string display_file = "(none)";
     if (!record_path.empty()) {
         const std::size_t slash = record_path.find_last_of('/');
         display_file = (slash == std::string::npos) ? record_path : record_path.substr(slash + 1);
     }
-    pros::screen::print(TEXT_MEDIUM, 170, 195, "FILE: %s", display_file.c_str());
-    pros::screen::print(TEXT_MEDIUM, 10, 220, "Tap RUN for auton / REC for driving log");
+    display_file = compact_ui_text(display_file, 22);
+
+    const int left_x = 10;
+    const int right_x = 230;
+
+    pros::screen::set_pen(pros::c::COLOR_WHITE);
+    pros::screen::print(TEXT_SMALL, left_x, 74, "AUTON: %s",
+                        g_auton_mode == AutonMode::GPS_LEMLIB ? "GPS" : "BASIC");
+    pros::screen::print(TEXT_SMALL, left_x, 92, "SOURCE: %s",
+                        g_sd_plans_loaded ? "SD" : "BUILT-IN");
+    pros::screen::print(TEXT_SMALL, left_x, 110, "SD: %s", g_sd_plans_loaded ? "OK" : "MISSING");
+    pros::screen::print(TEXT_SMALL, left_x, 128, "SLOT: %d", g_active_slot + 1);
+    pros::screen::print(TEXT_SMALL, left_x, 146, "DRIVE: %s", drive_mode_display(g_drive_mode));
+    pros::screen::print(TEXT_SMALL, left_x, 164, "REC: %s", recording ? "ON" : "OFF");
+    pros::screen::print(TEXT_SMALL, right_x, 74, "FILE: %s", display_file.c_str());
+    pros::screen::print(TEXT_SMALL, right_x, 92, "A/B GPS  Y/X 6WD");
+    pros::screen::print(TEXT_SMALL, right_x, 110, "L1/L2 intake  R1/R2 out");
+    pros::screen::print(TEXT_SMALL, 10, 218, "Tap RUN for auton / REC for driving log");
 }
 
 void brain_ui_loop() {
@@ -1250,14 +1266,21 @@ void opcontrol() {
     bool prev_dpad_right = false;
 
     while (true) {
-        const bool intake_in_now = master.get_digital(mapped_button(ControllerAction::INTAKE_IN));
-        const bool intake_out_now = master.get_digital(mapped_button(ControllerAction::INTAKE_OUT));
-        const bool outake_out_now = master.get_digital(mapped_button(ControllerAction::OUTAKE_OUT));
-        const bool outake_in_now = master.get_digital(mapped_button(ControllerAction::OUTAKE_IN));
-        const bool gps_enable_now = master.get_digital(mapped_button(ControllerAction::GPS_ENABLE));
-        const bool gps_disable_now = master.get_digital(mapped_button(ControllerAction::GPS_DISABLE));
-        const bool six_on_now = master.get_digital(mapped_button(ControllerAction::SIX_WHEEL_ON));
-        const bool six_off_now = master.get_digital(mapped_button(ControllerAction::SIX_WHEEL_OFF));
+        const auto button_now = [&](ControllerAction action) {
+            const auto mapped = mapped_button(action);
+            const auto fallback = default_controller_button(action);
+            return master.get_digital(mapped) || master.get_digital(fallback);
+        };
+
+        // Always honor default controls as a safety fallback if custom mapping is misconfigured.
+        const bool intake_in_now = button_now(ControllerAction::INTAKE_IN);
+        const bool intake_out_now = button_now(ControllerAction::INTAKE_OUT);
+        const bool outake_out_now = button_now(ControllerAction::OUTAKE_OUT);
+        const bool outake_in_now = button_now(ControllerAction::OUTAKE_IN);
+        const bool gps_enable_now = button_now(ControllerAction::GPS_ENABLE);
+        const bool gps_disable_now = button_now(ControllerAction::GPS_DISABLE);
+        const bool six_on_now = button_now(ControllerAction::SIX_WHEEL_ON);
+        const bool six_off_now = button_now(ControllerAction::SIX_WHEEL_OFF);
         const bool dpad_up = master.get_digital(DIGITAL_UP);
         const bool dpad_down = master.get_digital(DIGITAL_DOWN);
         const bool dpad_left = master.get_digital(DIGITAL_LEFT);
@@ -1373,8 +1396,9 @@ void opcontrol() {
                         }
                     }
                 } else {
-                    left_cmd = 0;
-                    right_cmd = 0;
+                    // Safety fallback: tank sticks still drive even when DPAD mode is selected.
+                    left_cmd = left_y;
+                    right_cmd = right_y;
                 }
                 break;
             }

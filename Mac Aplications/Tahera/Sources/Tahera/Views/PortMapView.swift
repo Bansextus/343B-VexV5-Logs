@@ -79,6 +79,19 @@ struct PortMapView: View {
                         sensorRow("GPS", value: $model.portMap.gps)
                     }
 
+                    HStack(spacing: 12) {
+                        Button("Save Port Map") {
+                            model.savePortMapToRepo()
+                        }
+                        if !model.portMapStatus.isEmpty {
+                            Text(model.portMapStatus)
+                                .foregroundColor(Theme.subtext)
+                                .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        }
+                        Spacer()
+                    }
+                    .padding(.top, 4)
+
                     Text("These values are applied to Tahera and Auton Planner during build/upload.")
                         .foregroundColor(Theme.subtext)
                         .font(.system(size: 18, weight: .medium))

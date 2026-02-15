@@ -7,7 +7,7 @@ enum AppSection: String, CaseIterable, Identifiable {
     case portMap = "Port Map"
     case sdCard = "SD Card"
     case field = "Field Replay"
-    case vexOS = "VEX OS UI"
+    case vexOS = "Digital Twin"
     case readme = "README"
     case github = "Repository Settings"
 
@@ -42,6 +42,32 @@ struct ProsProject: Identifiable {
     var name: String
     var relativePath: String
     var slot: Int
+}
+
+enum BuildUploadPhase {
+    case idle
+    case building
+    case buildSucceeded
+    case buildFailed
+    case uploading
+    case uploadSucceeded
+    case uploadFailed
+
+    var isRunning: Bool {
+        switch self {
+        case .building, .uploading:
+            return true
+        default:
+            return false
+        }
+    }
+}
+
+struct ProjectBuildUploadStatus {
+    var phase: BuildUploadPhase = .idle
+    var message: String = "Ready"
+    var port: String? = nil
+    var updatedAt: Date = Date()
 }
 
 struct PortValue {

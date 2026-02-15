@@ -42,7 +42,7 @@ namespace Tahera {
         private readonly Dictionary<string, (string path, int slot)> _projects = new() {
             { "The Tahera Sequence", ("Pros projects/Tahera_Project", 1) },
             { "Auton Planner", ("Pros projects/Auton_Planner_PROS", 2) },
-            { "Image Selector", ("Pros projects/Jerkbot_Image_Test", 3) },
+            { "Image Selector", ("Pros projects/Image Selector", 3) },
             { "Basic Bonkers", ("Pros projects/Basic_Bonkers_PROS", 4) }
         };
         private readonly string[] _controllerButtons = { "L1", "L2", "R1", "R2", "A", "B", "X", "Y", "UP", "DOWN", "LEFT", "RIGHT" };

@@ -1,6 +1,6 @@
 # Tahera controller mapping
 # Edit in Tahera app or manually. Format: ACTION=BUTTON (+ DRIVE_MODE)
-DRIVE_MODE=TANK
+DRIVE_MODE=ARCADE_2_STICK
 INTAKE_IN=L1
 INTAKE_OUT=L2
 OUTAKE_OUT=R1

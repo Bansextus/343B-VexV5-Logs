@@ -1,0 +1,36 @@
+{
+  "gps" : 21,
+  "imu" : 11,
+  "intakeLeft" : {
+    "reversed" : false,
+    "value" : 13
+  },
+  "intakeRight" : {
+    "reversed" : false,
+    "value" : 12
+  },
+  "leftMiddle" : {
+    "reversed" : false,
+    "value" : 20
+  },
+  "leftOuter1" : {
+    "reversed" : true,
+    "value" : 6
+  },
+  "leftOuter2" : {
+    "reversed" : true,
+    "value" : 1
+  },
+  "rightMiddle" : {
+    "reversed" : true,
+    "value" : 13
+  },
+  "rightOuter1" : {
+    "reversed" : false,
+    "value" : 10
+  },
+  "rightOuter2" : {
+    "reversed" : false,
+    "value" : 7
+  }
+}

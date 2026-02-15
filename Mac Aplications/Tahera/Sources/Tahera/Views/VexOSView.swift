@@ -44,7 +44,7 @@ struct VexOSView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                PanelTitle(text: "VEX OS UI", icon: "display.2")
+                PanelTitle(text: "Digital Twin", icon: "display.2")
 
                 Card {
                     HStack {
@@ -172,75 +172,151 @@ struct VexOSView: View {
                             .foregroundColor(Theme.subtext)
                     }
 
-                    HStack(alignment: .top, spacing: 24) {
-                        VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
                             Text("Click Drive Controls")
                                 .foregroundColor(Theme.text)
-                                .font(.system(size: 16, weight: .bold, design: .rounded))
-
-                            HStack {
-                                Spacer()
-                                ClickToggleButton(label: "UP", isOn: brain.touchButtonIsPressed(.up), tint: Theme.accent) {
-                                    toggleClickHold(.up)
-                                }
-                                Spacer()
-                            }
-
-                            HStack(spacing: 10) {
-                                ClickToggleButton(label: "LEFT", isOn: brain.touchButtonIsPressed(.left), tint: Theme.accent) {
-                                    toggleClickHold(.left)
-                                }
-                                ClickToggleButton(label: "DOWN", isOn: brain.touchButtonIsPressed(.down), tint: Theme.accent) {
-                                    toggleClickHold(.down)
-                                }
-                                ClickToggleButton(label: "RIGHT", isOn: brain.touchButtonIsPressed(.right), tint: Theme.accent) {
-                                    toggleClickHold(.right)
-                                }
-                            }
-
-                            Text("Click once to hold. Click again to release.")
+                                .font(.system(size: 17, weight: .bold, design: .rounded))
+                            Spacer()
+                            Text("Click to hold, click again to release")
                                 .foregroundColor(Theme.subtext)
                                 .font(.system(size: 13, weight: .semibold, design: .rounded))
                         }
 
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Mechanisms")
-                                .foregroundColor(Theme.text)
-                                .font(.system(size: 16, weight: .bold, design: .rounded))
+                        HStack(alignment: .top, spacing: 12) {
+                            controlCluster(title: "D-Pad") {
+                                VStack(spacing: 8) {
+                                    HStack {
+                                        Spacer()
+                                        ClickToggleButton(
+                                            label: "UP",
+                                            isOn: brain.touchButtonIsPressed(.up),
+                                            tint: Theme.accent
+                                        ) {
+                                            toggleClickHold(.up)
+                                        }
+                                        .frame(width: 104)
+                                        Spacer()
+                                    }
 
-                            HStack(spacing: 10) {
-                                ClickToggleButton(label: "L1 Intake In", isOn: brain.touchButtonIsPressed(.l1), tint: Color(hex: 0x4CD7A8)) {
-                                    toggleClickHold(.l1)
-                                }
-                                ClickToggleButton(label: "L2 Intake Out", isOn: brain.touchButtonIsPressed(.l2), tint: Color(hex: 0x4CD7A8)) {
-                                    toggleClickHold(.l2)
+                                    HStack(spacing: 8) {
+                                        ClickToggleButton(
+                                            label: "LEFT",
+                                            isOn: brain.touchButtonIsPressed(.left),
+                                            tint: Theme.accent
+                                        ) {
+                                            toggleClickHold(.left)
+                                        }
+                                        .frame(width: 104)
+
+                                        ControlStatePill(
+                                            label: "DRIVE",
+                                            active: brain.touchButtonIsPressed(.up)
+                                                || brain.touchButtonIsPressed(.down)
+                                                || brain.touchButtonIsPressed(.left)
+                                                || brain.touchButtonIsPressed(.right),
+                                            tint: Theme.accent
+                                        )
+                                        .frame(width: 94, height: 42)
+
+                                        ClickToggleButton(
+                                            label: "RIGHT",
+                                            isOn: brain.touchButtonIsPressed(.right),
+                                            tint: Theme.accent
+                                        ) {
+                                            toggleClickHold(.right)
+                                        }
+                                        .frame(width: 104)
+                                    }
+
+                                    HStack {
+                                        Spacer()
+                                        ClickToggleButton(
+                                            label: "DOWN",
+                                            isOn: brain.touchButtonIsPressed(.down),
+                                            tint: Theme.accent
+                                        ) {
+                                            toggleClickHold(.down)
+                                        }
+                                        .frame(width: 104)
+                                        Spacer()
+                                    }
                                 }
                             }
 
-                            HStack(spacing: 10) {
-                                ClickToggleButton(label: "R1 Outake Out", isOn: brain.touchButtonIsPressed(.r1), tint: Color(hex: 0x49B5E8)) {
-                                    toggleClickHold(.r1)
-                                }
-                                ClickToggleButton(label: "R2 Outake In", isOn: brain.touchButtonIsPressed(.r2), tint: Color(hex: 0x49B5E8)) {
-                                    toggleClickHold(.r2)
+                            controlCluster(title: "Mechanisms") {
+                                VStack(spacing: 8) {
+                                    HStack(spacing: 8) {
+                                        ClickToggleButton(
+                                            label: "L1 Intake In",
+                                            isOn: brain.touchButtonIsPressed(.l1),
+                                            tint: Color(hex: 0x4CD7A8)
+                                        ) {
+                                            toggleClickHold(.l1)
+                                        }
+                                        ClickToggleButton(
+                                            label: "L2 Intake Out",
+                                            isOn: brain.touchButtonIsPressed(.l2),
+                                            tint: Color(hex: 0x4CD7A8)
+                                        ) {
+                                            toggleClickHold(.l2)
+                                        }
+                                    }
+
+                                    HStack(spacing: 8) {
+                                        ClickToggleButton(
+                                            label: "R1 Outake Out",
+                                            isOn: brain.touchButtonIsPressed(.r1),
+                                            tint: Color(hex: 0x49B5E8)
+                                        ) {
+                                            toggleClickHold(.r1)
+                                        }
+                                        ClickToggleButton(
+                                            label: "R2 Outake In",
+                                            isOn: brain.touchButtonIsPressed(.r2),
+                                            tint: Color(hex: 0x49B5E8)
+                                        ) {
+                                            toggleClickHold(.r2)
+                                        }
+                                    }
+
+                                    HStack(spacing: 8) {
+                                        ControlStatePill(
+                                            label: "INTAKE",
+                                            active: brain.touchButtonIsPressed(.l1)
+                                                || brain.touchButtonIsPressed(.l2),
+                                            tint: Color(hex: 0x4CD7A8)
+                                        )
+                                        ControlStatePill(
+                                            label: "OUTAKE",
+                                            active: brain.touchButtonIsPressed(.r1)
+                                                || brain.touchButtonIsPressed(.r2),
+                                            tint: Color(hex: 0x49B5E8)
+                                        )
+                                        ControlStatePill(
+                                            label: "HELD \(heldClickCount)",
+                                            active: heldClickCount > 0,
+                                            tint: Color(hex: 0xE2C45A)
+                                        )
+                                    }
                                 }
                             }
+                        }
 
-                            HStack(spacing: 10) {
-                                PulsePadButton(label: "A GPS ON", tint: Color(hex: 0x2CBF6B)) {
-                                    pulseTouchButton(.a)
-                                }
-                                PulsePadButton(label: "B GPS OFF", tint: Color(hex: 0xBF4B4B)) {
-                                    pulseTouchButton(.b)
-                                }
-                                PulsePadButton(label: "Y 6WD ON", tint: Color(hex: 0x2CBF6B)) {
-                                    pulseTouchButton(.y)
-                                }
-                                PulsePadButton(label: "X 6WD OFF", tint: Color(hex: 0xBF4B4B)) {
-                                    pulseTouchButton(.x)
-                                }
+                        HStack(spacing: 8) {
+                            PulsePadButton(label: "A GPS ON", tint: Color(hex: 0x2CBF6B)) {
+                                pulseTouchButton(.a)
                             }
-
+                            PulsePadButton(label: "B GPS OFF", tint: Color(hex: 0xBF4B4B)) {
+                                pulseTouchButton(.b)
+                            }
+                            PulsePadButton(label: "Y 6WD ON", tint: Color(hex: 0x2CBF6B)) {
+                                pulseTouchButton(.y)
+                            }
+                            PulsePadButton(label: "X 6WD OFF", tint: Color(hex: 0xBF4B4B)) {
+                                pulseTouchButton(.x)
+                            }
+                            Spacer()
                             Button("Release Click Holds") {
                                 brain.clearTouchInputs()
                             }
@@ -319,6 +395,32 @@ struct VexOSView: View {
                 model.driveControlMode = mode
                 brain.applyControlProfile(driveMode: mode, mapping: model.controllerMapping)
             }
+        )
+    }
+
+    private var heldClickCount: Int {
+        ControllerButton.allCases.filter { brain.touchButtonIsPressed($0) }.count
+    }
+
+    private func controlCluster<Content: View>(
+        title: String,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .foregroundColor(Theme.text)
+                .font(.system(size: 15, weight: .bold, design: .rounded))
+            content()
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color.white.opacity(0.035))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(Color.white.opacity(0.1), lineWidth: 1)
         )
     }
 
@@ -883,7 +985,7 @@ private struct ClickToggleButton: View {
             Text(label)
                 .font(.system(size: 13, weight: .bold, design: .rounded))
                 .foregroundColor(Theme.text)
-                .frame(minWidth: 92)
+                .frame(maxWidth: .infinity, minHeight: 42)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 9)
                 .background(
@@ -921,6 +1023,27 @@ private struct PulsePadButton: View {
                 )
         }
         .buttonStyle(.plain)
+    }
+}
+
+private struct ControlStatePill: View {
+    let label: String
+    let active: Bool
+    let tint: Color
+
+    var body: some View {
+        Text(label)
+            .font(.system(size: 12, weight: .bold, design: .rounded))
+            .foregroundColor(Theme.text)
+            .frame(maxWidth: .infinity, minHeight: 40)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(active ? tint.opacity(0.78) : Color.white.opacity(0.09))
+            )
+            .overlay(
+                Capsule(style: .continuous)
+                    .stroke(active ? tint.opacity(0.95) : Color.white.opacity(0.16), lineWidth: 1)
+            )
     }
 }
 

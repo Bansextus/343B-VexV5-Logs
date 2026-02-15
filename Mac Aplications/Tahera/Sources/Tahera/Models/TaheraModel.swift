@@ -12,9 +12,10 @@ final class TaheraModel: ObservableObject {
     @Published var projects: [ProsProject] = [
         ProsProject(name: "The Tahera Sequence", relativePath: "Pros projects/Tahera_Project", slot: 1),
         ProsProject(name: "Auton Planner", relativePath: "Pros projects/Auton_Planner_PROS", slot: 2),
-        ProsProject(name: "Image Selector", relativePath: "Pros projects/Jerkbot_Image_Test", slot: 3),
+        ProsProject(name: "Image Selector", relativePath: "Pros projects/Image Selector", slot: 3),
         ProsProject(name: "Basic Bonkers", relativePath: "Pros projects/Basic_Bonkers_PROS", slot: 4)
     ]
+    @Published var buildUploadStatusByPath: [String: ProjectBuildUploadStatus] = [:]
 
     @Published var sdPath: String = "/Volumes/MICROBONK"
     @Published var sdMounted: Bool = false
@@ -23,6 +24,7 @@ final class TaheraModel: ObservableObject {
     @Published var brainPort: String = ""
 
     @Published var portMap: PortMap = PortMap()
+    @Published var portMapStatus: String = ""
     @Published var driveControlMode: DriveControlMode = .tank
     @Published var controllerMapping: [ControllerAction: ControllerButton] =
         Dictionary(uniqueKeysWithValues: ControllerAction.allCases.map { ($0, $0.defaultButton) })
@@ -45,14 +47,17 @@ final class TaheraModel: ObservableObject {
 
     private let repoSettingsPassword = "56Wrenches.782"
     private let controllerMappingFileName = "controller_mapping.txt"
+    private let portMapFileName = "port_map.json"
     private let busyQueue = DispatchQueue(label: "TaheraModel.BusyQueue")
     private var busyCount = 0
     let virtualBrain = VirtualBrainCore()
 
     init() {
+        initializeBuildUploadStatus()
         refreshSDStatus()
         refreshBrainStatus()
         loadReadme()
+        loadPortMapFromRepo()
         loadControllerMappingFromRepo()
         virtualBrain.setDefaultVirtualSDPath(for: repoPath)
     }
@@ -113,6 +118,18 @@ final class TaheraModel: ObservableObject {
         return ""
     }
 
+    private func firstErrorLikeLine(_ text: String) -> String {
+        let lines = text.components(separatedBy: .newlines)
+        for line in lines {
+            let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
+            let lower = trimmed.lowercased()
+            if !trimmed.isEmpty && (lower.contains("error") || lower.contains("failed")) {
+                return trimmed
+            }
+        }
+        return firstMeaningfulLine(text)
+    }
+
     private func isReleaseNotFoundError(_ output: String) -> Bool {
         let lower = output.lowercased()
         return lower.contains("release not found") || (lower.contains("not found") && lower.contains("release"))
@@ -154,6 +171,19 @@ final class TaheraModel: ObservableObject {
             "/opt/homebrew/bin/gh",
             "/usr/local/bin/gh",
             "/usr/bin/gh"
+        ])
+    }
+
+    private func prosExecutablePath() -> String? {
+        let home = NSHomeDirectory()
+        return resolveExecutable("pros", preferredPaths: [
+            "/opt/homebrew/bin/pros",
+            "/usr/local/bin/pros",
+            "\(home)/Library/Python/3.13/bin/pros",
+            "\(home)/Library/Python/3.12/bin/pros",
+            "\(home)/Library/Python/3.11/bin/pros",
+            "\(home)/Library/Python/3.10/bin/pros",
+            "\(home)/Library/Python/3.9/bin/pros"
         ])
     }
 
@@ -360,23 +390,298 @@ final class TaheraModel: ObservableObject {
     }
 
     private func projectPath(_ project: ProsProject) -> String {
-        URL(fileURLWithPath: repoPath).appendingPathComponent(project.relativePath).path
+        let trimmedRepoPath = repoPath.trimmingCharacters(in: .whitespacesAndNewlines)
+        return URL(fileURLWithPath: trimmedRepoPath).appendingPathComponent(project.relativePath).path
+    }
+
+    private func validateProjectPath(_ path: String, for project: ProsProject, phaseOnFailure: BuildUploadPhase) -> Bool {
+        guard FileManager.default.fileExists(atPath: path) else {
+            setBuildUploadStatus(
+                for: project,
+                phase: phaseOnFailure,
+                message: "Project folder not found: \(path). Check Home -> Repository path."
+            )
+            return false
+        }
+        return true
+    }
+
+    private func requireProsExecutable(for project: ProsProject?, phaseOnFailure: BuildUploadPhase) -> String? {
+        guard let prosPath = prosExecutablePath() else {
+            let message = "PROS CLI not found. Install PROS CLI or add `pros` to PATH."
+            if let project {
+                setBuildUploadStatus(for: project, phase: phaseOnFailure, message: message)
+            } else {
+                appendLog("Failed: \(message)")
+            }
+            return nil
+        }
+        return prosPath
+    }
+
+    private struct V5UploadPorts {
+        var system: [String] = []
+        var user: [String] = []
+    }
+
+    private func initializeBuildUploadStatus() {
+        var statusMap: [String: ProjectBuildUploadStatus] = [:]
+        for project in projects {
+            statusMap[project.relativePath] = ProjectBuildUploadStatus()
+        }
+        buildUploadStatusByPath = statusMap
+    }
+
+    func buildUploadStatus(for project: ProsProject) -> ProjectBuildUploadStatus {
+        buildUploadStatusByPath[project.relativePath] ?? ProjectBuildUploadStatus()
+    }
+
+    private func setBuildUploadStatus(
+        for project: ProsProject,
+        phase: BuildUploadPhase,
+        message: String,
+        port: String? = nil
+    ) {
+        DispatchQueue.main.async {
+            self.buildUploadStatusByPath[project.relativePath] = ProjectBuildUploadStatus(
+                phase: phase,
+                message: message,
+                port: port,
+                updatedAt: Date()
+            )
+        }
+        appendLog("[\(project.name)] \(message)")
+    }
+
+    private func parseV5UploadPorts(from output: String) -> V5UploadPorts {
+        enum Section {
+            case none
+            case system
+            case user
+        }
+
+        var result = V5UploadPorts()
+        var section: Section = .none
+
+        for rawLine in output.components(separatedBy: .newlines) {
+            let line = rawLine.trimmingCharacters(in: .whitespacesAndNewlines)
+            if line.contains("VEX EDR V5 System Ports") {
+                section = .system
+                continue
+            }
+            if line.contains("VEX EDR V5 User Ports") {
+                section = .user
+                continue
+            }
+            if line.hasPrefix("There are no connected") {
+                continue
+            }
+            guard line.hasPrefix("/dev/"), let port = line.components(separatedBy: " ").first else {
+                continue
+            }
+            switch section {
+            case .system:
+                result.system.append(port)
+            case .user:
+                result.user.append(port)
+            case .none:
+                break
+            }
+        }
+
+        return result
+    }
+
+    private func preferredUploadPorts(from ports: V5UploadPorts) -> [String] {
+        var seen = Set<String>()
+        var ordered: [String] = []
+        for port in ports.system + ports.user {
+            if seen.insert(port).inserted {
+                ordered.append(port)
+            }
+        }
+        return ordered
+    }
+
+    private func outputShowsUploadSuccess(_ output: String) -> Bool {
+        let lower = output.lowercased()
+        if lower.contains("finished uploading") {
+            return true
+        }
+        if lower.contains("uploading slot_") || lower.contains("uploading program") {
+            return true
+        }
+        return output.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private func detectUploadPorts(prosPath: String, completion: @escaping ([String]) -> Void) {
+        runCommandCapture(
+            [prosPath, "lsusb"],
+            label: "pros lsusb",
+            timeoutSeconds: 30
+        ) { status, output in
+            if status != 0 {
+                if !self.brainPort.isEmpty {
+                    completion([self.brainPort])
+                } else {
+                    completion([])
+                }
+                return
+            }
+            let parsed = self.parseV5UploadPorts(from: output)
+            let preferred = self.preferredUploadPorts(from: parsed)
+            if preferred.isEmpty, !self.brainPort.isEmpty {
+                completion([self.brainPort])
+                return
+            }
+            completion(preferred)
+        }
+    }
+
+    private func attemptUpload(
+        project: ProsProject,
+        prosPath: String,
+        projectPath: String,
+        candidates: [String],
+        index: Int
+    ) {
+        guard index < candidates.count else {
+            setBuildUploadStatus(
+                for: project,
+                phase: .uploadFailed,
+                message: "Upload failed: no usable V5 ports were found."
+            )
+            return
+        }
+
+        let port = candidates[index]
+        let uploadLabel = "pros upload . \(port) --slot \(project.slot) (\(project.name))"
+        setBuildUploadStatus(
+            for: project,
+            phase: .uploading,
+            message: "Uploading to slot \(project.slot) on \(port)...",
+            port: port
+        )
+
+        runCommandCapture(
+            [prosPath, "upload", ".", port, "--slot", String(project.slot), "--name", project.name],
+            cwd: projectPath,
+            label: uploadLabel,
+            timeoutSeconds: 600
+        ) { status, output in
+            if status == 0 && self.outputShowsUploadSuccess(output) {
+                self.setBuildUploadStatus(
+                    for: project,
+                    phase: .uploadSucceeded,
+                    message: "Upload complete on \(port).",
+                    port: port
+                )
+                return
+            }
+
+            if index + 1 < candidates.count {
+                self.setBuildUploadStatus(
+                    for: project,
+                    phase: .uploading,
+                    message: "Upload failed on \(port); retrying...",
+                    port: candidates[index + 1]
+                )
+                self.attemptUpload(project: project, prosPath: prosPath, projectPath: projectPath, candidates: candidates, index: index + 1)
+                return
+            }
+
+            let detail = self.firstErrorLikeLine(output)
+            let reason = detail.isEmpty ? "Upload failed on \(port) (exit \(status))." : "Upload failed on \(port): \(detail)"
+            self.setBuildUploadStatus(
+                for: project,
+                phase: .uploadFailed,
+                message: reason,
+                port: port
+            )
+        }
+    }
+
+    private func uploadWithDetectedPort(project: ProsProject, projectPath: String) {
+        guard let prosPath = requireProsExecutable(for: project, phaseOnFailure: .uploadFailed) else {
+            return
+        }
+        guard validateProjectPath(projectPath, for: project, phaseOnFailure: .uploadFailed) else {
+            return
+        }
+        setBuildUploadStatus(for: project, phase: .uploading, message: "Scanning V5 ports...")
+        detectUploadPorts(prosPath: prosPath) { ports in
+            guard !ports.isEmpty else {
+                self.setBuildUploadStatus(
+                    for: project,
+                    phase: .uploadFailed,
+                    message: "Upload failed: no connected V5 ports found."
+                )
+                return
+            }
+            self.attemptUpload(project: project, prosPath: prosPath, projectPath: projectPath, candidates: ports, index: 0)
+        }
     }
 
     func build(project: ProsProject) {
-        runCommand(["/usr/bin/env", "pros", "make"], cwd: projectPath(project), label: "pros make (\(project.name))")
+        let path = projectPath(project)
+        guard validateProjectPath(path, for: project, phaseOnFailure: .buildFailed) else {
+            return
+        }
+        guard let prosPath = requireProsExecutable(for: project, phaseOnFailure: .buildFailed) else {
+            return
+        }
+        setBuildUploadStatus(for: project, phase: .building, message: "Building project...")
+        runCommandCapture(
+            [prosPath, "make"],
+            cwd: path,
+            label: "pros make (\(project.name))",
+            timeoutSeconds: 600
+        ) { status, output in
+            if status == 0 {
+                self.setBuildUploadStatus(
+                    for: project,
+                    phase: .buildSucceeded,
+                    message: "Build complete for slot \(project.slot)."
+                )
+                return
+            }
+            let detail = self.firstErrorLikeLine(output)
+            let reason = detail.isEmpty ? "Build failed (exit \(status))." : "Build failed: \(detail)"
+            self.setBuildUploadStatus(for: project, phase: .buildFailed, message: reason)
+        }
     }
 
     func upload(project: ProsProject) {
-        runCommand(["/usr/bin/env", "pros", "upload", "--slot", String(project.slot)], cwd: projectPath(project), label: "pros upload --slot \(project.slot) (\(project.name))")
+        uploadWithDetectedPort(project: project, projectPath: projectPath(project))
     }
 
     func buildAndUpload(project: ProsProject) {
         let path = projectPath(project)
-        runCommand(["/usr/bin/env", "pros", "make"], cwd: path, label: "pros make (\(project.name))") { status in
+        guard validateProjectPath(path, for: project, phaseOnFailure: .buildFailed) else {
+            return
+        }
+        guard let prosPath = requireProsExecutable(for: project, phaseOnFailure: .buildFailed) else {
+            return
+        }
+        setBuildUploadStatus(for: project, phase: .building, message: "Building project...")
+        runCommandCapture(
+            [prosPath, "make"],
+            cwd: path,
+            label: "pros make (\(project.name))",
+            timeoutSeconds: 600
+        ) { status, output in
             if status == 0 {
-                self.runCommand(["/usr/bin/env", "pros", "upload", "--slot", String(project.slot)], cwd: path, label: "pros upload --slot \(project.slot) (\(project.name))")
+                self.setBuildUploadStatus(
+                    for: project,
+                    phase: .buildSucceeded,
+                    message: "Build complete. Starting upload..."
+                )
+                self.uploadWithDetectedPort(project: project, projectPath: path)
+                return
             }
+            let detail = self.firstErrorLikeLine(output)
+            let reason = detail.isEmpty ? "Build failed (exit \(status))." : "Build failed: \(detail)"
+            self.setBuildUploadStatus(for: project, phase: .buildFailed, message: reason)
         }
     }
 
@@ -628,6 +933,61 @@ final class TaheraModel: ObservableObject {
             .path
     }
 
+    private func portMapRepoPath() -> String {
+        URL(fileURLWithPath: repoPath)
+            .appendingPathComponent("Pros projects/Tahera_Project")
+            .appendingPathComponent(portMapFileName)
+            .path
+    }
+
+    private struct PortValuePayload: Codable {
+        var value: Int
+        var reversed: Bool
+    }
+
+    private struct PortMapPayload: Codable {
+        var leftOuter1: PortValuePayload
+        var leftOuter2: PortValuePayload
+        var leftMiddle: PortValuePayload
+        var rightOuter1: PortValuePayload
+        var rightOuter2: PortValuePayload
+        var rightMiddle: PortValuePayload
+        var intakeLeft: PortValuePayload
+        var intakeRight: PortValuePayload
+        var imu: Int
+        var gps: Int
+    }
+
+    private func payload(from map: PortMap) -> PortMapPayload {
+        PortMapPayload(
+            leftOuter1: PortValuePayload(value: map.leftOuter1.value, reversed: map.leftOuter1.reversed),
+            leftOuter2: PortValuePayload(value: map.leftOuter2.value, reversed: map.leftOuter2.reversed),
+            leftMiddle: PortValuePayload(value: map.leftMiddle.value, reversed: map.leftMiddle.reversed),
+            rightOuter1: PortValuePayload(value: map.rightOuter1.value, reversed: map.rightOuter1.reversed),
+            rightOuter2: PortValuePayload(value: map.rightOuter2.value, reversed: map.rightOuter2.reversed),
+            rightMiddle: PortValuePayload(value: map.rightMiddle.value, reversed: map.rightMiddle.reversed),
+            intakeLeft: PortValuePayload(value: map.intakeLeft.value, reversed: map.intakeLeft.reversed),
+            intakeRight: PortValuePayload(value: map.intakeRight.value, reversed: map.intakeRight.reversed),
+            imu: map.imu,
+            gps: map.gps
+        )
+    }
+
+    private func portMap(from payload: PortMapPayload) -> PortMap {
+        PortMap(
+            leftOuter1: PortValue(value: payload.leftOuter1.value, reversed: payload.leftOuter1.reversed),
+            leftOuter2: PortValue(value: payload.leftOuter2.value, reversed: payload.leftOuter2.reversed),
+            leftMiddle: PortValue(value: payload.leftMiddle.value, reversed: payload.leftMiddle.reversed),
+            rightOuter1: PortValue(value: payload.rightOuter1.value, reversed: payload.rightOuter1.reversed),
+            rightOuter2: PortValue(value: payload.rightOuter2.value, reversed: payload.rightOuter2.reversed),
+            rightMiddle: PortValue(value: payload.rightMiddle.value, reversed: payload.rightMiddle.reversed),
+            intakeLeft: PortValue(value: payload.intakeLeft.value, reversed: payload.intakeLeft.reversed),
+            intakeRight: PortValue(value: payload.intakeRight.value, reversed: payload.intakeRight.reversed),
+            imu: payload.imu,
+            gps: payload.gps
+        )
+    }
+
     private func controllerMappingSDPath() -> String {
         URL(fileURLWithPath: sdPath)
             .appendingPathComponent(controllerMappingFileName)
@@ -733,6 +1093,53 @@ final class TaheraModel: ObservableObject {
 
     func saveControllerMappingToSD() {
         saveControllerMapping(to: controllerMappingSDPath(), sourceName: "SD")
+    }
+
+    func loadPortMapFromRepo() {
+        let path = portMapRepoPath()
+        guard FileManager.default.fileExists(atPath: path) else {
+            DispatchQueue.main.async {
+                self.portMapStatus = "No saved port map found in repo"
+            }
+            return
+        }
+        do {
+            let data = try Data(contentsOf: URL(fileURLWithPath: path))
+            let decoded = try JSONDecoder().decode(PortMapPayload.self, from: data)
+            DispatchQueue.main.async {
+                self.portMap = self.portMap(from: decoded)
+                self.portMapStatus = "Loaded from repo"
+            }
+            appendLog("Port map loaded from repo: \(path)")
+        } catch {
+            DispatchQueue.main.async {
+                self.portMapStatus = "Load failed"
+            }
+            appendLog("Port map load failed: \(error.localizedDescription)")
+        }
+    }
+
+    func savePortMapToRepo() {
+        let path = portMapRepoPath()
+        do {
+            let parent = URL(fileURLWithPath: path).deletingLastPathComponent().path
+            if !FileManager.default.fileExists(atPath: parent) {
+                try FileManager.default.createDirectory(atPath: parent, withIntermediateDirectories: true)
+            }
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+            let data = try encoder.encode(payload(from: portMap))
+            try data.write(to: URL(fileURLWithPath: path), options: .atomic)
+            DispatchQueue.main.async {
+                self.portMapStatus = "Saved to repo"
+            }
+            appendLog("Port map saved to repo: \(path)")
+        } catch {
+            DispatchQueue.main.async {
+                self.portMapStatus = "Save failed"
+            }
+            appendLog("Port map save failed: \(error.localizedDescription)")
+        }
     }
 
     func controllerMappingConflicts() -> [(ControllerButton, [ControllerAction])] {
